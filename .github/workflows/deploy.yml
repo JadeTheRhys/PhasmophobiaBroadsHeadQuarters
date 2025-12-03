@@ -39,6 +39,18 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
+      - name: Verify build output
+        run: |
+          set -e
+          echo "=== Build output verification ==="
+          ls -la docs/
+          echo "=== Assets folder ==="
+          ls -la docs/assets/
+          echo "=== Checking image files ==="
+          find docs/assets \( -name "*.jpg" -o -name "*.png" \) -type f | head -20
+          echo "=== Image count ==="
+          find docs/assets \( -name "*.jpg" -o -name "*.png" \) -type f | wc -l
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
