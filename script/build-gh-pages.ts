@@ -1,5 +1,5 @@
 import { build as viteBuild } from "vite";
-import { rm, cp, mkdir } from "fs/promises";
+import { rm, cp, mkdir, readFile } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
@@ -12,17 +12,29 @@ async function buildGhPages() {
 
   console.log("Building client for GitHub Pages...");
   
+  // Read repository name from package.json homepage or use environment variable
+  const pkg = JSON.parse(await readFile("package.json", "utf-8"));
+  const homepage = pkg.homepage || '';
+  const repoNameFromHomepage = homepage.split('/').pop() || '';
+  const repoName = process.env.REPO_NAME || repoNameFromHomepage || 'PhasmophobiaBroadsHeadQuarters';
+  
   // Set environment for GitHub Pages build
   process.env.GITHUB_PAGES = 'true';
-  process.env.REPO_NAME = 'PhasmophobiaBroadsHeadQuarters';
+  process.env.REPO_NAME = repoName;
   
   await viteBuild();
 
-  // Copy assets folder to docs/assets for static serving
+  // Copy assets folder contents directly to docs/assets
   if (existsSync(assetsPath)) {
     const destAssetsPath = path.join(docsPath, "assets");
-    await mkdir(destAssetsPath, { recursive: true });
-    await cp(assetsPath, destAssetsPath, { recursive: true });
+    // Read asset files from source and copy them individually to avoid nested directory
+    const { readdir } = await import("fs/promises");
+    const files = await readdir(assetsPath);
+    for (const file of files) {
+      const srcFile = path.join(assetsPath, file);
+      const destFile = path.join(destAssetsPath, file);
+      await cp(srcFile, destFile, { recursive: true });
+    }
     console.log("Copied assets to docs/assets");
   }
 

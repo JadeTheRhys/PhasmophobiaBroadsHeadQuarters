@@ -60,7 +60,11 @@ export function getCurrentUserId(): string | null {
 export async function initializeFirebaseAuth(): Promise<string> {
   // If Firebase is not configured, generate a local offline user ID
   if (!auth || !isFirebaseConfigured) {
-    currentUserId = `offline-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    // Use crypto.randomUUID for better uniqueness, fallback to timestamp-based ID
+    const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    currentUserId = `offline-${randomPart}`;
     console.log("Firebase not configured. Using offline mode — ID:", currentUserId);
     return currentUserId;
   }
