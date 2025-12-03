@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 
+interface GitHubUser {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+}
+
 interface AppState {
   userId: string;
   displayName: string;
@@ -8,12 +15,16 @@ interface AppState {
   isShaking: boolean;
   emfLevel: number;
   isFirebaseOnline: boolean;
+  isGitHubAuthenticated: boolean;
+  gitHubUser: GitHubUser | null;
   activeTab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile';
   setUser: (userId: string, displayName: string, photoUrl: string) => void;
   setFlickering: (value: boolean) => void;
   setShaking: (value: boolean) => void;
   setEmfLevel: (level: number) => void;
   setFirebaseOnline: (value: boolean) => void;
+  setGitHubAuth: (isAuthenticated: boolean, user: GitHubUser | null) => void;
+  clearGitHubAuth: () => void;
   setActiveTab: (tab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile') => void;
   triggerEffect: (type: 'hunt' | 'flicker' | 'slam' | 'manifest') => void;
 }
@@ -26,6 +37,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   isShaking: false,
   emfLevel: 0,
   isFirebaseOnline: false,
+  isGitHubAuthenticated: false,
+  gitHubUser: null,
   activeTab: 'chat',
   
   setUser: (userId, displayName, photoUrl) => set({ userId, displayName, photoUrl }),
@@ -33,6 +46,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   setShaking: (value) => set({ isShaking: value }),
   setEmfLevel: (level) => set({ emfLevel: Math.min(5, Math.max(0, level)) }),
   setFirebaseOnline: (value) => set({ isFirebaseOnline: value }),
+  setGitHubAuth: (isAuthenticated, user) => set({ 
+    isGitHubAuthenticated: isAuthenticated, 
+    gitHubUser: user,
+    // Update user profile from GitHub if authenticated
+    ...(user && {
+      displayName: user.displayName || get().displayName,
+      photoUrl: user.photoURL || get().photoUrl
+    })
+  }),
+  clearGitHubAuth: () => set({ 
+    isGitHubAuthenticated: false, 
+    gitHubUser: null 
+  }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   
   triggerEffect: (type) => {

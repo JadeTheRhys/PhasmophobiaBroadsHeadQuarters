@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
 import { User, Save, Check } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
+import { GitHubLogin } from '@/components/GitHubLogin';
 
 // Get base URL for assets (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/';
@@ -151,6 +153,15 @@ export function ProfileEditor({ onSave }: ProfileEditorProps) {
             </>
           )}
         </Button>
+
+        <Separator className="my-6" />
+
+        <div className="space-y-3">
+          <h4 className="text-md font-orbitron text-primary flex items-center gap-2">
+            GitHub Authentication
+          </h4>
+          <GitHubLogin />
+        </div>
       </div>
     </div>
   );
