@@ -15,29 +15,17 @@ import {
   Firestore
 } from "firebase/firestore";
 
-// Validate required Firebase environment variables
-const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
-const FIREBASE_PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID;
+// Firebase configuration - uses environment variables or falls back to hardcoded values
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB2WA7yotRlqNidwIgJcT19JNrK8ukMgs4",
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads"}.firebaseapp.com`,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads",
+  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads"}.firebasestorage.app`,
+  messagingSenderId: "503659624108",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:503659624108:web:6e57fbc6bf36b0d5989109"
+};
 
-// Check if Firebase is properly configured
-const isFirebaseConfigured = Boolean(FIREBASE_API_KEY && FIREBASE_PROJECT_ID && FIREBASE_APP_ID);
-
-if (!isFirebaseConfigured) {
-  console.warn(
-    "Firebase environment variables not configured. " +
-    "Please set VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, and VITE_FIREBASE_APP_ID. " +
-    "Running in offline mode."
-  );
-}
-
-const firebaseConfig = isFirebaseConfigured ? {
-  apiKey: FIREBASE_API_KEY,
-  authDomain: `${FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: FIREBASE_PROJECT_ID,
-  storageBucket: `${FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: FIREBASE_APP_ID,
-} : null;
+const isFirebaseConfigured = true;
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;

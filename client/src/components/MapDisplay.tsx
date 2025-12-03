@@ -4,11 +4,20 @@ import { Card } from '@/components/ui/card';
 import { Map } from 'lucide-react';
 import { MAP_DATA } from '@shared/schema';
 
-// Map location keys to their image URLs (available images)
-const MAP_IMAGE_URLS: Record<string, string> = {
-  Bleasdale: '/assets/bleasdale_1764775134033.jpg',
-  Brownstone: '/assets/brownstone_1764775134033.jpg',
+// Get base URL for assets (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/';
+
+// Map location keys to their image filenames (available images)
+const MAP_IMAGE_FILENAMES: Record<string, string> = {
+  Bleasdale: 'bleasdale_1764775134033.jpg',
+  Brownstone: 'brownstone_1764775134033.jpg',
 };
+
+// Helper function to get full asset URL
+function getMapImageUrl(mapName: string): string | null {
+  const filename = MAP_IMAGE_FILENAMES[mapName];
+  return filename ? `${BASE_URL}assets/${filename}` : null;
+}
 
 interface MapDisplayProps {
   currentMap?: string;
@@ -25,7 +34,7 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
   };
 
   const mapInfo = selectedMap ? MAP_DATA[selectedMap] : null;
-  const mapImageUrl = selectedMap ? MAP_IMAGE_URLS[selectedMap] : null;
+  const mapImageUrl = selectedMap ? getMapImageUrl(selectedMap) : null;
 
   return (
     <div className="space-y-4" data-testid="map-display">
@@ -42,26 +51,29 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
           <SelectValue placeholder="Select investigation location" />
         </SelectTrigger>
         <SelectContent className="bg-card border-primary max-h-[300px]">
-          {mapNames.map((name) => (
-            <SelectItem 
-              key={name} 
-              value={name}
-              className="font-jetbrains hover:bg-accent/10"
-            >
-              <div className="flex items-center gap-2">
-                {MAP_IMAGE_URLS[name] && (
-                  <div className="w-6 h-6 rounded overflow-hidden border border-accent/30">
-                    <img 
-                      src={MAP_IMAGE_URLS[name]} 
-                      alt={MAP_DATA[name].name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <span>{MAP_DATA[name].name} ({MAP_DATA[name].size})</span>
-              </div>
-            </SelectItem>
-          ))}
+          {mapNames.map((name) => {
+            const mapUrl = getMapImageUrl(name);
+            return (
+              <SelectItem 
+                key={name} 
+                value={name}
+                className="font-jetbrains hover:bg-accent/10"
+              >
+                <div className="flex items-center gap-2">
+                  {mapUrl && (
+                    <div className="w-6 h-6 rounded overflow-hidden border border-accent/30">
+                      <img 
+                        src={mapUrl} 
+                        alt={MAP_DATA[name].name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <span>{MAP_DATA[name].name} ({MAP_DATA[name].size})</span>
+                </div>
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
 

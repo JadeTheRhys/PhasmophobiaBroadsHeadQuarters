@@ -241,11 +241,12 @@ export const EVIDENCE_TYPES = [
   "DOTS"
 ];
 
-export const AVATAR_OPTIONS = [
-  "https://api.dicebear.com/7.x/bottts/svg?seed=ghost1&backgroundColor=b71cff",
-  "https://api.dicebear.com/7.x/bottts/svg?seed=ghost2&backgroundColor=5dfdff",
-  "https://api.dicebear.com/7.x/bottts/svg?seed=ghost3&backgroundColor=ff5d5d",
-  "https://api.dicebear.com/7.x/bottts/svg?seed=hunter1&backgroundColor=22c55e",
-  "https://api.dicebear.com/7.x/bottts/svg?seed=hunter2&backgroundColor=eab308",
-  "https://api.dicebear.com/7.x/bottts/svg?seed=hunter3&backgroundColor=f97316"
+// Profile avatar image filenames - these are resolved with BASE_URL at runtime
+export const AVATAR_FILENAMES = [
+  "case1_1764775148686.jpg",
+  "case2_1764775148687.jpg",
+  "case3_1764775148687.jpg",
+  "case4_1764775148688.jpg",
+  "case5_1764775148688.jpg",
+  "case6_1764775148688.jpg"
 ];

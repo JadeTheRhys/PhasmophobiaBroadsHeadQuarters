@@ -8,14 +8,21 @@ import { User, Save, Check } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 
+// Get base URL for assets (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/';
+
+// Profile avatar options using case file images
 const AVATAR_OPTIONS = [
-  { id: 'ghost1', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=ghost1&backgroundColor=b71cff', label: 'Ghost 1' },
-  { id: 'ghost2', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=ghost2&backgroundColor=5dfdff', label: 'Ghost 2' },
-  { id: 'ghost3', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=ghost3&backgroundColor=ff5d5d', label: 'Ghost 3' },
-  { id: 'hunter1', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=hunter1&backgroundColor=22c55e', label: 'Hunter 1' },
-  { id: 'hunter2', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=hunter2&backgroundColor=eab308', label: 'Hunter 2' },
-  { id: 'hunter3', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=hunter3&backgroundColor=f97316', label: 'Hunter 3' },
-];
+  { id: 'hunter1', filename: 'case1_1764775148686.jpg', label: 'Hunter 1' },
+  { id: 'hunter2', filename: 'case2_1764775148687.jpg', label: 'Hunter 2' },
+  { id: 'hunter3', filename: 'case3_1764775148687.jpg', label: 'Hunter 3' },
+  { id: 'hunter4', filename: 'case4_1764775148688.jpg', label: 'Hunter 4' },
+  { id: 'hunter5', filename: 'case5_1764775148688.jpg', label: 'Hunter 5' },
+  { id: 'hunter6', filename: 'case6_1764775148688.jpg', label: 'Hunter 6' },
+].map(avatar => ({
+  ...avatar,
+  url: `${BASE_URL}assets/${avatar.filename}`
+}));
 
 interface ProfileEditorProps {
   onSave?: (displayName: string, photoUrl: string) => void;
