@@ -117,6 +117,7 @@ export async function signInWithGitHub(): Promise<GitHubUserInfo> {
     const result: UserCredential = await signInWithPopup(auth, provider);
     const user = result.user;
     
+    // Update module-level userId for Firebase operations (sendChatMessage, updateSquadStatus, etc.)
     currentUserId = user.uid;
     console.log("Signed in with GitHub — UID:", currentUserId);
 

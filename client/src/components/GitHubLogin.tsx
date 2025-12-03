@@ -7,6 +7,10 @@ import { useToast } from '@/hooks/use-toast';
 import { FaGithub } from 'react-icons/fa';
 import { LogOut, Mail, User, CheckCircle2 } from 'lucide-react';
 
+// Default fallback values for user profile
+const DEFAULT_DISPLAY_NAME = 'Ghost Hunter';
+const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/bottts/svg?seed=github';
+
 export function GitHubLogin() {
   const { 
     isGitHubAuthenticated, 
@@ -42,8 +46,8 @@ export function GitHubLogin() {
       });
 
       // Update user profile with GitHub info
-      const newDisplayName = userInfo.displayName || 'Ghost Hunter';
-      const newPhotoUrl = userInfo.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=github';
+      const newDisplayName = userInfo.displayName || DEFAULT_DISPLAY_NAME;
+      const newPhotoUrl = userInfo.photoURL || DEFAULT_AVATAR_URL;
       setUser(userInfo.uid, newDisplayName, newPhotoUrl);
 
       // Update squad status with new profile

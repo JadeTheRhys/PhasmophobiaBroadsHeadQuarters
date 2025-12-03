@@ -46,15 +46,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   setShaking: (value) => set({ isShaking: value }),
   setEmfLevel: (level) => set({ emfLevel: Math.min(5, Math.max(0, level)) }),
   setFirebaseOnline: (value) => set({ isFirebaseOnline: value }),
-  setGitHubAuth: (isAuthenticated, user) => set({ 
+  setGitHubAuth: (isAuthenticated, user) => set((state) => ({ 
     isGitHubAuthenticated: isAuthenticated, 
     gitHubUser: user,
     // Update user profile from GitHub if authenticated
     ...(user && {
-      displayName: user.displayName || get().displayName,
-      photoUrl: user.photoURL || get().photoUrl
+      displayName: user.displayName || state.displayName,
+      photoUrl: user.photoURL || state.photoUrl
     })
-  }),
+  })),
   clearGitHubAuth: () => set({ 
     isGitHubAuthenticated: false, 
     gitHubUser: null 
