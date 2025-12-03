@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Phone, PhoneCall, X } from 'lucide-react';
+import { Phone, PhoneCall } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAppStore } from '@/lib/store';
 
 interface VideoCallButtonProps {
@@ -9,28 +8,27 @@ interface VideoCallButtonProps {
 }
 
 export function VideoCallButton({ roomName = "PhasmoBroadsHQ" }: VideoCallButtonProps) {
-  const [isCallActive, setIsCallActive] = useState(false);
   const [isRinging, setIsRinging] = useState(false);
   const { displayName } = useAppStore();
 
   const handleStartCall = () => {
     setIsRinging(true);
+    
+    // Build the Jitsi URL with display name
+    const jitsiUrl = `https://meet.jit.si/${roomName}#userInfo.displayName="${encodeURIComponent(displayName || 'GhostHunter')}"`;
+    
+    // Open Jitsi in a new browser tab/window
     setTimeout(() => {
+      window.open(jitsiUrl, '_blank', 'noopener,noreferrer');
       setIsRinging(false);
-      setIsCallActive(true);
     }, 1500);
   };
-
-  const handleEndCall = () => {
-    setIsCallActive(false);
-  };
-
-  const jitsiUrl = `https://meet.jit.si/${roomName}#userInfo.displayName="${encodeURIComponent(displayName || 'GhostHunter')}"`;
 
   return (
     <>
       <Button
         onClick={handleStartCall}
+        disabled={isRinging}
         className={`
           relative overflow-visible
           bg-red-900/80 hover:bg-red-800 
@@ -73,45 +71,6 @@ export function VideoCallButton({ roomName = "PhasmoBroadsHQ" }: VideoCallButton
           }}
         />
       </Button>
-
-      <Dialog open={isCallActive} onOpenChange={setIsCallActive}>
-        <DialogContent 
-          className="max-w-4xl h-[80vh] p-0 bg-background border-red-500"
-          style={{ boxShadow: '0 0 40px rgba(239, 68, 68, 0.4)' }}
-        >
-          <DialogHeader className="p-4 border-b border-red-500/30 flex flex-row items-center justify-between">
-            <div>
-              <DialogTitle className="font-orbitron text-red-400 flex items-center gap-2">
-                <PhoneCall className="w-5 h-5 text-red-500 animate-pulse" />
-                Squad Video Call
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground font-jetbrains text-xs">
-                Room: {roomName}
-              </DialogDescription>
-            </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleEndCall}
-              className="font-orbitron"
-              data-testid="button-end-call"
-            >
-              <X className="w-4 h-4 mr-1" />
-              End Call
-            </Button>
-          </DialogHeader>
-          
-          <div className="flex-1 h-full min-h-0">
-            <iframe
-              src={jitsiUrl}
-              allow="camera; microphone; fullscreen; display-capture; autoplay"
-              className="w-full h-full border-0"
-              style={{ minHeight: 'calc(80vh - 80px)' }}
-              title="Jitsi Video Call"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <style>{`
         @keyframes glow-pulse {

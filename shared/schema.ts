@@ -5,7 +5,7 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: varchar("id", { length: 36 }).primaryKey(),
   displayName: text("display_name").notNull(),
-  photoUrl: text("photo_url").notNull().default("/avatars/default.png"),
+  photoUrl: text("photo_url").notNull().default("https://api.dicebear.com/7.x/bottts/svg?seed=default"),
   lastSeen: timestamp("last_seen").defaultNow(),
 });
 
@@ -242,10 +242,10 @@ export const EVIDENCE_TYPES = [
 ];
 
 export const AVATAR_OPTIONS = [
-  "/avatars/ghost1.png",
-  "/avatars/ghost2.png",
-  "/avatars/ghost3.png",
-  "/avatars/hunter1.png",
-  "/avatars/hunter2.png",
-  "/avatars/hunter3.png"
+  "https://api.dicebear.com/7.x/bottts/svg?seed=ghost1&backgroundColor=b71cff",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=ghost2&backgroundColor=5dfdff",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=ghost3&backgroundColor=ff5d5d",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=hunter1&backgroundColor=22c55e",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=hunter2&backgroundColor=eab308",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=hunter3&backgroundColor=f97316"
 ];

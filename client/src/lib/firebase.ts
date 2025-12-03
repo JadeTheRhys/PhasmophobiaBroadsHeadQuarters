@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously, onAuthStateChanged, User } from "firebase/auth";
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { getAuth, signInAnonymously, onAuthStateChanged, User, Auth } from "firebase/auth";
 import { 
   getFirestore, 
   collection, 
@@ -11,25 +11,45 @@ import {
   doc,
   setDoc,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  Firestore
 } from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB2WA7yotRlqNidwIgJcT19JNrK8ukMgs4",
-  authDomain: import.meta.env.VITE_FIREBASE_PROJECT_ID 
-    ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`
-    : "phasmophobiabroads.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads",
-  storageBucket: import.meta.env.VITE_FIREBASE_PROJECT_ID
-    ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`
-    : "phasmophobiabroads.firebasestorage.app",
-  messagingSenderId: "503659624108",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:503659624108:web:6e57fbc6bf36b0d5989109",
-};
+// Validate required Firebase environment variables
+const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
+const FIREBASE_PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID;
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const auth = getAuth(app);
+// Check if Firebase is properly configured
+const isFirebaseConfigured = Boolean(FIREBASE_API_KEY && FIREBASE_PROJECT_ID && FIREBASE_APP_ID);
+
+if (!isFirebaseConfigured) {
+  console.warn(
+    "Firebase environment variables not configured. " +
+    "Please set VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, and VITE_FIREBASE_APP_ID. " +
+    "Running in offline mode."
+  );
+}
+
+const firebaseConfig = isFirebaseConfigured ? {
+  apiKey: FIREBASE_API_KEY,
+  authDomain: `${FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: `${FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  appId: FIREBASE_APP_ID,
+} : null;
+
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+let auth: Auth | null = null;
+
+if (firebaseConfig) {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  auth = getAuth(app);
+}
+
+export { db, auth };
 
 let currentUserId: string | null = null;
 
@@ -38,15 +58,23 @@ export function getCurrentUserId(): string | null {
 }
 
 export async function initializeFirebaseAuth(): Promise<string> {
+  // If Firebase is not configured, generate a local offline user ID
+  if (!auth || !isFirebaseConfigured) {
+    currentUserId = `offline-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    console.log("Firebase not configured. Using offline mode — ID:", currentUserId);
+    return currentUserId;
+  }
+
+  const authInstance = auth;
   return new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(authInstance, async (user) => {
       if (user) {
         currentUserId = user.uid;
         console.log("Firebase Auth Ready — UID:", currentUserId);
         resolve(currentUserId);
       } else {
         try {
-          const result = await signInAnonymously(auth);
+          const result = await signInAnonymously(authInstance);
           currentUserId = result.user.uid;
           console.log("Signed in anonymously — UID:", currentUserId);
           resolve(currentUserId);
@@ -95,7 +123,7 @@ export async function sendChatMessage(
   photoUrl: string, 
   isCommand: boolean = false
 ) {
-  if (!currentUserId) return;
+  if (!currentUserId || !db) return;
   
   await addDoc(collection(db, "chat"), {
     userId: currentUserId,
@@ -108,7 +136,7 @@ export async function sendChatMessage(
 }
 
 export async function triggerGhostEvent(type: string, intensity: number = 3) {
-  if (!currentUserId) return;
+  if (!currentUserId || !db) return;
   
   const eventMessages: Record<string, string> = {
     hunt: "HUNT INITIATED! All agents take cover immediately!",
@@ -135,7 +163,7 @@ export async function updateSquadStatus(
   map?: string,
   location?: string
 ) {
-  if (!currentUserId) return;
+  if (!currentUserId || !db) return;
   
   const statusRef = doc(db, "status", currentUserId);
   await setDoc(statusRef, {
@@ -150,7 +178,7 @@ export async function updateSquadStatus(
 }
 
 export async function saveEvidence(evidence: string, displayName: string) {
-  if (!currentUserId) return;
+  if (!currentUserId || !db) return;
   
   await addDoc(collection(db, "evidence"), {
     userId: currentUserId,
@@ -163,6 +191,11 @@ export async function saveEvidence(evidence: string, displayName: string) {
 export function subscribeToChatMessages(
   callback: (messages: FirebaseChatMessage[]) => void
 ) {
+  if (!db) {
+    // Return no-op unsubscribe when Firebase is not configured
+    return () => {};
+  }
+
   const q = query(
     collection(db, "chat"), 
     orderBy("timestamp", "asc"),
@@ -190,6 +223,11 @@ export function subscribeToChatMessages(
 export function subscribeToGhostEvents(
   callback: (event: FirebaseGhostEvent) => void
 ) {
+  if (!db) {
+    // Return no-op unsubscribe when Firebase is not configured
+    return () => {};
+  }
+
   const q = query(
     collection(db, "events"), 
     orderBy("timestamp", "desc"),
@@ -216,6 +254,11 @@ export function subscribeToGhostEvents(
 export function subscribeToSquadStatus(
   callback: (statuses: FirebaseSquadStatus[]) => void
 ) {
+  if (!db) {
+    // Return no-op unsubscribe when Firebase is not configured
+    return () => {};
+  }
+
   return onSnapshot(collection(db, "status"), (snapshot) => {
     const statuses: FirebaseSquadStatus[] = [];
     snapshot.forEach((doc) => {
@@ -238,6 +281,11 @@ export function subscribeToSquadStatus(
 export function subscribeToEvidence(
   callback: (evidence: { id: string; evidence: string; displayName: string }[]) => void
 ) {
+  if (!db) {
+    // Return no-op unsubscribe when Firebase is not configured
+    return () => {};
+  }
+
   const q = query(collection(db, "evidence"), orderBy("timestamp", "asc"));
   
   return onSnapshot(q, (snapshot) => {
