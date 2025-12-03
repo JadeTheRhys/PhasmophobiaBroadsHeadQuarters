@@ -19,7 +19,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   userId: '',
   displayName: 'Ghost Hunter',
-  photoUrl: '/avatars/default.png',
+  photoUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=default',
   isFlickering: false,
   isShaking: false,
   emfLevel: 0,

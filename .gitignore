@@ -3,6 +3,8 @@ node_modules/
 
 # Build output
 dist/
+# Note: /docs is NOT ignored - it's used for GitHub Pages deployment
+# Run `npm run build:gh-pages` to generate the /docs folder
 
 # Environment variables (keep secrets out of git)
 .env
