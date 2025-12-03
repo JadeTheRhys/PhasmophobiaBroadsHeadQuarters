@@ -4,15 +4,24 @@ import { Card } from '@/components/ui/card';
 import { FolderOpen } from 'lucide-react';
 import { CASE_FILES } from '@shared/schema';
 
-// Map case file IDs to their image URLs
-const CASE_IMAGE_URLS: Record<string, string> = {
-  '1': '/assets/case1_1764775148686.jpg',
-  '2': '/assets/case2_1764775148687.jpg',
-  '3': '/assets/case3_1764775148687.jpg',
-  '4': '/assets/case4_1764775148688.jpg',
-  '5': '/assets/case5_1764775148688.jpg',
-  '6': '/assets/case6_1764775148688.jpg',
+// Get base URL for assets (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/';
+
+// Map case file IDs to their image filenames
+const CASE_IMAGE_FILENAMES: Record<string, string> = {
+  '1': 'case1_1764775148686.jpg',
+  '2': 'case2_1764775148687.jpg',
+  '3': 'case3_1764775148687.jpg',
+  '4': 'case4_1764775148688.jpg',
+  '5': 'case5_1764775148688.jpg',
+  '6': 'case6_1764775148688.jpg',
 };
+
+// Helper function to get full asset URL
+function getCaseImageUrl(id: string): string {
+  const filename = CASE_IMAGE_FILENAMES[id];
+  return filename ? `${BASE_URL}assets/${filename}` : '';
+}
 
 export function CaseFilesGallery() {
   const [selectedCase, setSelectedCase] = useState<typeof CASE_FILES[0] | null>(null);
@@ -35,7 +44,7 @@ export function CaseFilesGallery() {
           >
             <div className="aspect-video relative overflow-hidden">
               <img 
-                src={CASE_IMAGE_URLS[caseFile.id]} 
+                src={getCaseImageUrl(caseFile.id)} 
                 alt={caseFile.title}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
@@ -68,7 +77,7 @@ export function CaseFilesGallery() {
             <div className="aspect-video rounded-lg overflow-hidden border-2 border-accent/50" style={{ boxShadow: '0 0 20px hsl(187 100% 66% / 0.4)' }}>
               {selectedCase && (
                 <img 
-                  src={CASE_IMAGE_URLS[selectedCase.id]} 
+                  src={getCaseImageUrl(selectedCase.id)} 
                   alt={selectedCase.title}
                   className="w-full h-full object-cover"
                 />

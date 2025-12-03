@@ -4,11 +4,20 @@ import { Card } from '@/components/ui/card';
 import { Map } from 'lucide-react';
 import { MAP_DATA } from '@shared/schema';
 
-// Map location keys to their image URLs (available images)
-const MAP_IMAGE_URLS: Record<string, string> = {
-  Bleasdale: '/assets/bleasdale_1764775134033.jpg',
-  Brownstone: '/assets/brownstone_1764775134033.jpg',
+// Get base URL for assets (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/';
+
+// Map location keys to their image filenames (available images)
+const MAP_IMAGE_FILENAMES: Record<string, string> = {
+  Bleasdale: 'bleasdale_1764775134033.jpg',
+  Brownstone: 'brownstone_1764775134033.jpg',
 };
+
+// Helper function to get full asset URL
+function getMapImageUrl(mapName: string): string | null {
+  const filename = MAP_IMAGE_FILENAMES[mapName];
+  return filename ? `${BASE_URL}assets/${filename}` : null;
+}
 
 interface MapDisplayProps {
   currentMap?: string;
@@ -25,7 +34,7 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
   };
 
   const mapInfo = selectedMap ? MAP_DATA[selectedMap] : null;
-  const mapImageUrl = selectedMap ? MAP_IMAGE_URLS[selectedMap] : null;
+  const mapImageUrl = selectedMap ? getMapImageUrl(selectedMap) : null;
 
   return (
     <div className="space-y-4" data-testid="map-display">
@@ -49,10 +58,10 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
               className="font-jetbrains hover:bg-accent/10"
             >
               <div className="flex items-center gap-2">
-                {MAP_IMAGE_URLS[name] && (
+                {getMapImageUrl(name) && (
                   <div className="w-6 h-6 rounded overflow-hidden border border-accent/30">
                     <img 
-                      src={MAP_IMAGE_URLS[name]} 
+                      src={getMapImageUrl(name)!} 
                       alt={MAP_DATA[name].name}
                       className="w-full h-full object-cover"
                     />

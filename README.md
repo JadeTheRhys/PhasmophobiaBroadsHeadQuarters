@@ -59,6 +59,7 @@ npm start
 |---------|-------------|
 | `npm run dev` | Start development server (hot reload) |
 | `npm run build` | Build for production |
+| `npm run build:gh-pages` | Build for GitHub Pages (static hosting) |
 | `npm start` | Run production server |
 | `npm run check` | Run TypeScript type checking |
 | `npm run db:push` | Push database schema (requires DATABASE_URL) |
@@ -145,6 +146,33 @@ npm run build
 ```
 
 ## Deployment
+
+### GitHub Pages (Static Hosting)
+
+The app can be deployed to GitHub Pages as a static site with Firebase real-time features:
+
+1. **Enable GitHub Pages** in your repository settings:
+   - Go to Settings > Pages
+   - Set Source to "GitHub Actions"
+
+2. **Add Firebase secrets** (optional, for real-time features):
+   - Go to Settings > Secrets and variables > Actions
+   - Add these repository secrets:
+     - `VITE_FIREBASE_API_KEY` - Your Firebase API key
+     - `VITE_FIREBASE_PROJECT_ID` - Your Firebase project ID
+     - `VITE_FIREBASE_APP_ID` - Your Firebase app ID
+   
+   Without these secrets, the app will run in offline mode with local state only.
+
+3. **Push to main branch** - The included GitHub Actions workflow will automatically build and deploy to GitHub Pages.
+
+4. **Manual build** (for local testing):
+   ```bash
+   npm run build:gh-pages
+   ```
+   The output will be in the `/docs` directory.
+
+### Server Deployment
 
 Recommended platforms:
 - **Railway**: `railway up`
