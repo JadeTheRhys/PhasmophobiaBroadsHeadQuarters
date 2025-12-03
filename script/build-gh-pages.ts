@@ -44,6 +44,16 @@ async function buildGhPages() {
   await writeFile(nojekyllPath, "");
   console.log("Created .nojekyll file");
 
+  // Copy index.html to 404.html for SPA routing support on GitHub Pages
+  const indexPath = path.join(docsPath, "index.html");
+  const notFoundPath = path.join(docsPath, "404.html");
+  if (existsSync(indexPath)) {
+    await cp(indexPath, notFoundPath);
+    console.log("Created 404.html for SPA routing support");
+  } else {
+    console.warn("Warning: index.html not found, skipping 404.html creation");
+  }
+
   console.log("GitHub Pages build complete! Output in /docs directory.");
 }
 
