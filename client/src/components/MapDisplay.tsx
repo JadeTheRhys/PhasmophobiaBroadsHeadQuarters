@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { Map, Building2 } from 'lucide-react';
+import { Map } from 'lucide-react';
 import { MAP_DATA } from '@shared/schema';
+
+// Map location keys to their image URLs (available images)
+const MAP_IMAGE_URLS: Record<string, string> = {
+  Bleasdale: '/assets/bleasdale_1764775134033.jpg',
+  Brownstone: '/assets/brownstone_1764775134033.jpg',
+};
 
 interface MapDisplayProps {
   currentMap?: string;
@@ -19,6 +25,7 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
   };
 
   const mapInfo = selectedMap ? MAP_DATA[selectedMap] : null;
+  const mapImageUrl = selectedMap ? MAP_IMAGE_URLS[selectedMap] : null;
 
   return (
     <div className="space-y-4" data-testid="map-display">
@@ -29,7 +36,7 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
 
       <Select value={selectedMap} onValueChange={handleMapChange}>
         <SelectTrigger 
-          className="bg-background/50 border-primary font-jetbrains"
+          className="bg-background/50 border-primary font-jetbrains hover:border-accent transition-colors"
           data-testid="select-map"
         >
           <SelectValue placeholder="Select investigation location" />
@@ -39,9 +46,20 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
             <SelectItem 
               key={name} 
               value={name}
-              className="font-jetbrains"
+              className="font-jetbrains hover:bg-accent/10"
             >
-              {MAP_DATA[name].name} ({MAP_DATA[name].size})
+              <div className="flex items-center gap-2">
+                {MAP_IMAGE_URLS[name] && (
+                  <div className="w-6 h-6 rounded overflow-hidden border border-accent/30">
+                    <img 
+                      src={MAP_IMAGE_URLS[name]} 
+                      alt={MAP_DATA[name].name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <span>{MAP_DATA[name].name} ({MAP_DATA[name].size})</span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
@@ -51,10 +69,20 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
         className="overflow-hidden border-accent bg-background/50"
         style={{ boxShadow: '0 0 12px hsl(187 100% 66% / 0.3)' }}
       >
-        <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center relative">
+        <div className="aspect-video relative overflow-hidden">
           {mapInfo ? (
             <>
-              <Building2 className="w-16 h-16 text-accent/30" />
+              {mapImageUrl ? (
+                <img 
+                  src={mapImageUrl} 
+                  alt={mapInfo.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+                  <Map className="w-16 h-16 text-accent/30" />
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent">
                 <p className="font-orbitron text-accent text-lg text-glow-cyan">
@@ -66,11 +94,13 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
               </div>
             </>
           ) : (
-            <div className="text-center">
-              <Map className="w-12 h-12 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-muted-foreground font-jetbrains text-sm">
-                Select a location
-              </p>
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+              <div className="text-center">
+                <Map className="w-12 h-12 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-muted-foreground font-jetbrains text-sm">
+                  Select a location
+                </p>
+              </div>
             </div>
           )}
         </div>

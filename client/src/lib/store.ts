@@ -7,11 +7,13 @@ interface AppState {
   isFlickering: boolean;
   isShaking: boolean;
   emfLevel: number;
+  isFirebaseOnline: boolean;
   activeTab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile';
   setUser: (userId: string, displayName: string, photoUrl: string) => void;
   setFlickering: (value: boolean) => void;
   setShaking: (value: boolean) => void;
   setEmfLevel: (level: number) => void;
+  setFirebaseOnline: (value: boolean) => void;
   setActiveTab: (tab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile') => void;
   triggerEffect: (type: 'hunt' | 'flicker' | 'slam' | 'manifest') => void;
 }
@@ -23,12 +25,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   isFlickering: false,
   isShaking: false,
   emfLevel: 0,
+  isFirebaseOnline: false,
   activeTab: 'chat',
   
   setUser: (userId, displayName, photoUrl) => set({ userId, displayName, photoUrl }),
   setFlickering: (value) => set({ isFlickering: value }),
   setShaking: (value) => set({ isShaking: value }),
   setEmfLevel: (level) => set({ emfLevel: Math.min(5, Math.max(0, level)) }),
+  setFirebaseOnline: (value) => set({ isFirebaseOnline: value }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   
   triggerEffect: (type) => {
