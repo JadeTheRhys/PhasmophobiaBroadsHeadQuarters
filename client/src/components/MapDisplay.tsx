@@ -51,26 +51,29 @@ export function MapDisplay({ currentMap, onMapChange }: MapDisplayProps) {
           <SelectValue placeholder="Select investigation location" />
         </SelectTrigger>
         <SelectContent className="bg-card border-primary max-h-[300px]">
-          {mapNames.map((name) => (
-            <SelectItem 
-              key={name} 
-              value={name}
-              className="font-jetbrains hover:bg-accent/10"
-            >
-              <div className="flex items-center gap-2">
-                {getMapImageUrl(name) && (
-                  <div className="w-6 h-6 rounded overflow-hidden border border-accent/30">
-                    <img 
-                      src={getMapImageUrl(name)!} 
-                      alt={MAP_DATA[name].name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <span>{MAP_DATA[name].name} ({MAP_DATA[name].size})</span>
-              </div>
-            </SelectItem>
-          ))}
+          {mapNames.map((name) => {
+            const mapUrl = getMapImageUrl(name);
+            return (
+              <SelectItem 
+                key={name} 
+                value={name}
+                className="font-jetbrains hover:bg-accent/10"
+              >
+                <div className="flex items-center gap-2">
+                  {mapUrl && (
+                    <div className="w-6 h-6 rounded overflow-hidden border border-accent/30">
+                      <img 
+                        src={mapUrl} 
+                        alt={MAP_DATA[name].name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <span>{MAP_DATA[name].name} ({MAP_DATA[name].size})</span>
+                </div>
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
 
