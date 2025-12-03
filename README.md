@@ -8,7 +8,7 @@ A real-time multiplayer ghost hunting command center for Phasmophobia squads. Fe
 - **Backend**: Express.js + TypeScript
 - **State Management**: Zustand
 - **Data Fetching**: TanStack Query
-- **Real-time**: WebSocket
+- **Real-time**: Firebase (Firestore + Auth)
 - **Database**: PostgreSQL with Drizzle ORM (optional - works with in-memory storage)
 
 ## Quick Start
@@ -17,6 +17,7 @@ A real-time multiplayer ghost hunting command center for Phasmophobia squads. Fe
 
 - Node.js 18+ 
 - npm 9+
+- Firebase project (for real-time features)
 
 ### Installation
 
@@ -35,7 +36,9 @@ A real-time multiplayer ghost hunting command center for Phasmophobia squads. Fe
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` with your configuration. The app runs with in-memory storage by default; add `DATABASE_URL` for persistent PostgreSQL storage.
+   Edit `.env` with your configuration:
+   - **Firebase credentials are REQUIRED** - get them from [Firebase Console](https://console.firebase.google.com/)
+   - `DATABASE_URL` is optional (app uses in-memory storage by default)
 
 4. **Run in development mode**
    ```bash
@@ -83,6 +86,9 @@ npm start
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
+| `VITE_FIREBASE_API_KEY` | **Yes** | - | Firebase API key |
+| `VITE_FIREBASE_PROJECT_ID` | **Yes** | - | Firebase project ID |
+| `VITE_FIREBASE_APP_ID` | **Yes** | - | Firebase app ID |
 | `PORT` | No | `5000` | Server port |
 | `NODE_ENV` | No | `development` | Environment mode |
 | `DATABASE_URL` | No | - | PostgreSQL connection string |
@@ -111,6 +117,10 @@ Type in the chat panel:
 ## Troubleshooting
 
 ### Common Issues
+
+**Blank page / Firebase error**
+- Ensure you have set the Firebase environment variables in `.env`
+- Get credentials from [Firebase Console](https://console.firebase.google.com/) > Project Settings > General > Your apps
 
 **Port already in use**
 ```bash
