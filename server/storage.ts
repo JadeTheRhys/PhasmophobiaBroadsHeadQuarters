@@ -54,7 +54,9 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = { 
-      ...insertUser, 
+      id: insertUser.id,
+      displayName: insertUser.displayName,
+      photoUrl: insertUser.photoUrl ?? "/avatars/default.png",
       lastSeen: new Date() 
     };
     this.users.set(insertUser.id, user);
@@ -80,7 +82,12 @@ export class MemStorage implements IStorage {
 
   async createChatMessage(message: InsertChatMessage & { displayName?: string; photoUrl?: string }): Promise<ChatMessage> {
     const chatMessage: ChatMessage & { displayName?: string; photoUrl?: string } = {
-      ...message,
+      id: message.id,
+      userId: message.userId,
+      text: message.text,
+      isCommand: message.isCommand ?? false,
+      displayName: message.displayName,
+      photoUrl: message.photoUrl,
       timestamp: new Date()
     };
     this.chatMessages.set(message.id, chatMessage);
@@ -96,7 +103,11 @@ export class MemStorage implements IStorage {
 
   async createGhostEvent(event: InsertGhostEvent): Promise<GhostEvent> {
     const ghostEvent: GhostEvent = {
-      ...event,
+      id: event.id,
+      type: event.type,
+      intensity: event.intensity ?? 1,
+      message: event.message ?? null,
+      triggeredBy: event.triggeredBy ?? null,
       timestamp: new Date()
     };
     this.ghostEvents.set(event.id, ghostEvent);
@@ -110,7 +121,10 @@ export class MemStorage implements IStorage {
 
   async createEvidence(evidenceItem: InsertEvidence): Promise<Evidence> {
     const ev: Evidence = {
-      ...evidenceItem,
+      id: evidenceItem.id,
+      userId: evidenceItem.userId,
+      evidence: evidenceItem.evidence,
+      displayName: evidenceItem.displayName ?? null,
       timestamp: new Date()
     };
     this.evidence.set(evidenceItem.id, ev);

@@ -15,11 +15,16 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB2WA7yotRlqNidwIgJcT19JNrK8ukMgs4",
+  authDomain: import.meta.env.VITE_FIREBASE_PROJECT_ID 
+    ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`
+    : "phasmophobiabroads.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads",
+  storageBucket: import.meta.env.VITE_FIREBASE_PROJECT_ID
+    ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`
+    : "phasmophobiabroads.firebasestorage.app",
+  messagingSenderId: "503659624108",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:503659624108:web:6e57fbc6bf36b0d5989109",
 };
 
 const app = initializeApp(firebaseConfig);
