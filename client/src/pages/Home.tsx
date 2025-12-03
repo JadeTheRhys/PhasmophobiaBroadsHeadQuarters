@@ -36,7 +36,8 @@ export default function Home() {
     isFlickering, 
     isShaking,
     triggerEffect,
-    setEmfLevel
+    setEmfLevel,
+    setFirebaseOnline
   } = useAppStore();
   
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
@@ -55,23 +56,29 @@ export default function Home() {
   useEffect(() => {
     const initFirebase = async () => {
       try {
-        const uid = await initializeFirebaseAuth();
+        const { userId: uid, isOnline } = await initializeFirebaseAuth();
         setUser(uid, displayName || 'Ghost Hunter', photoUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=ghost1&backgroundColor=b71cff');
         setIsFirebaseReady(true);
+        setFirebaseOnline(isOnline);
         
         setLogs(prev => [...prev, {
           id: Date.now().toString(),
           type: 'system',
-          message: `Firebase connected. Agent ${uid.slice(0, 8)} authenticated.`,
+          message: isOnline 
+            ? `Firebase connected. Agent ${uid.slice(0, 8)} authenticated.`
+            : `Using offline mode. Agent ${uid.slice(0, 8)} initialized.`,
           timestamp: new Date()
         }]);
 
-        await updateSquadStatus(
-          displayName || 'Ghost Hunter',
-          photoUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=ghost1&backgroundColor=b71cff'
-        );
+        if (isOnline) {
+          await updateSquadStatus(
+            displayName || 'Ghost Hunter',
+            photoUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=ghost1&backgroundColor=b71cff'
+          );
+        }
       } catch (error) {
         console.error('Firebase init error:', error);
+        setFirebaseOnline(false);
         setLogs(prev => [...prev, {
           id: Date.now().toString(),
           type: 'event',

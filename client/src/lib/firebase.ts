@@ -57,7 +57,11 @@ export function getCurrentUserId(): string | null {
   return currentUserId;
 }
 
-export async function initializeFirebaseAuth(): Promise<string> {
+export function isFirebaseConnected(): boolean {
+  return isFirebaseConfigured && db !== null && auth !== null;
+}
+
+export async function initializeFirebaseAuth(): Promise<{ userId: string; isOnline: boolean }> {
   // If Firebase is not configured, generate a local offline user ID
   if (!auth || !isFirebaseConfigured) {
     // Use crypto.randomUUID for better uniqueness, fallback to timestamp-based ID
@@ -66,7 +70,7 @@ export async function initializeFirebaseAuth(): Promise<string> {
       : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
     currentUserId = `offline-${randomPart}`;
     console.log("Firebase not configured. Using offline mode — ID:", currentUserId);
-    return currentUserId;
+    return { userId: currentUserId, isOnline: false };
   }
 
   const authInstance = auth;
@@ -75,13 +79,13 @@ export async function initializeFirebaseAuth(): Promise<string> {
       if (user) {
         currentUserId = user.uid;
         console.log("Firebase Auth Ready — UID:", currentUserId);
-        resolve(currentUserId);
+        resolve({ userId: currentUserId, isOnline: true });
       } else {
         try {
           const result = await signInAnonymously(authInstance);
           currentUserId = result.user.uid;
           console.log("Signed in anonymously — UID:", currentUserId);
-          resolve(currentUserId);
+          resolve({ userId: currentUserId, isOnline: true });
         } catch (error) {
           console.error("Firebase auth error:", error);
           reject(error);
