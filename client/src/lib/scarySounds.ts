@@ -7,6 +7,23 @@
  * All sounds are from Mixkit (https://mixkit.co) - free for commercial and personal use.
  */
 
+// Allowed domain for audio URLs - only Mixkit CDN is trusted
+const ALLOWED_AUDIO_DOMAIN = 'assets.mixkit.co';
+
+/**
+ * Validates that a URL is from a trusted source
+ */
+function isValidAudioUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname === ALLOWED_AUDIO_DOMAIN && 
+           parsedUrl.protocol === 'https:' &&
+           parsedUrl.pathname.endsWith('.mp3');
+  } catch {
+    return false;
+  }
+}
+
 // Royalty-free horror sound effects from Mixkit CDN
 // These are preview/download links that work directly in web audio
 export const SCARY_SOUND_EFFECTS = [
@@ -134,8 +151,14 @@ class ScarySoundService {
       ? SCARY_SOUND_EFFECTS 
       : SCARY_SOUND_EFFECTS.filter(s => s.category === category);
     
+    // If no sounds match the category, fall back to all sounds
+    if (sounds.length === 0) {
+      const randomIndex = Math.floor(Math.random() * SCARY_SOUND_EFFECTS.length);
+      return SCARY_SOUND_EFFECTS[randomIndex];
+    }
+    
     const randomIndex = Math.floor(Math.random() * sounds.length);
-    return sounds[randomIndex] || SCARY_SOUND_EFFECTS[0];
+    return sounds[randomIndex];
   }
 
   /**
@@ -175,6 +198,12 @@ class ScarySoundService {
    * Play a specific sound by URL
    */
   private playSound(url: string): void {
+    // Validate URL is from a trusted source before playing
+    if (!isValidAudioUrl(url)) {
+      console.error('[ScarySounds] Blocked untrusted audio URL:', url);
+      return;
+    }
+
     try {
       // Clean up previous audio element
       if (this.audioElement) {
@@ -194,8 +223,9 @@ class ScarySoundService {
         this.isPlaying = false;
       };
 
-      this.audioElement.onerror = () => {
-        console.error('[ScarySounds] Failed to play sound:', url);
+      this.audioElement.onerror = (e) => {
+        const errorEvent = e as ErrorEvent;
+        console.error('[ScarySounds] Failed to load audio:', url, errorEvent.message || 'Unknown error');
         this.isPlaying = false;
       };
 
@@ -203,8 +233,18 @@ class ScarySoundService {
       const playPromise = this.audioElement.play();
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          // Auto-play might be blocked by browser - this is expected
-          console.warn('[ScarySounds] Playback blocked:', error.message);
+          // Handle different types of playback errors
+          if (error.name === 'NotAllowedError') {
+            // Auto-play blocked by browser policy - this is expected on first interaction
+            console.warn('[ScarySounds] Playback blocked by browser policy. User interaction required.');
+          } else if (error.name === 'NotSupportedError') {
+            console.error('[ScarySounds] Audio format not supported:', url);
+          } else if (error.name === 'AbortError') {
+            // Playback was aborted, likely by another play() call - not an error
+            console.debug('[ScarySounds] Playback aborted');
+          } else {
+            console.error('[ScarySounds] Playback error:', error.name, error.message);
+          }
           this.isPlaying = false;
         });
       }
@@ -239,6 +279,9 @@ export const scarySoundService = new ScarySoundService();
 // Export scare command types that should trigger sounds
 export const SCARE_COMMANDS = ['scare', 'jumpscare', 'whisper', 'creak', 'haunt'] as const;
 export type ScareCommand = typeof SCARE_COMMANDS[number];
+
+// Set for O(1) lookup performance when checking if an event type is a scare command
+export const SCARE_COMMANDS_SET = new Set<string>(SCARE_COMMANDS);
 
 /**
  * Get the sound category for a scare command

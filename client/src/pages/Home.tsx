@@ -27,7 +27,7 @@ import {
 } from '@/lib/firebase';
 import { 
   scarySoundService, 
-  SCARE_COMMANDS, 
+  SCARE_COMMANDS_SET, 
   getSoundCategoryForCommand,
   type ScareCommand 
 } from '@/lib/scarySounds';
@@ -111,9 +111,8 @@ export default function Home() {
         triggerEffect('flicker');
       }
       
-      // Play scary sound for scare commands
-      // Check if this is a scare event type and play the appropriate sound
-      if (SCARE_COMMANDS.includes(event.type as ScareCommand)) {
+      // Play scary sound for scare commands (uses Set for O(1) lookup)
+      if (SCARE_COMMANDS_SET.has(event.type)) {
         const category = getSoundCategoryForCommand(event.type as ScareCommand);
         scarySoundService.playRandomSound(event.id, category);
       }
