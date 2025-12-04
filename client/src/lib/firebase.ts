@@ -5,9 +5,12 @@
  * All auth operations are client-side safe and do not require admin privileges.
  * 
  * Supported authentication methods:
- * - Anonymous sign-in (signInAnonymously)
  * - GitHub OAuth (signInWithPopup with GithubAuthProvider)
  * - Email/Password (signInWithEmailAndPassword, createUserWithEmailAndPassword)
+ * 
+ * Note: Anonymous sign-in has been intentionally removed because it requires
+ * explicit enablement in Firebase Console and causes 'auth/admin-restricted-operation'
+ * errors when disabled. Firebase remains ONLINE with a temporary ID until users sign in.
  * 
  * IMPORTANT: This file does NOT use any Firebase Admin SDK methods.
  * All operations are performed using the standard Firebase Web SDK which
@@ -17,7 +20,6 @@
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { 
   getAuth, 
-  signInAnonymously, 
   signInWithPopup, 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -85,21 +87,38 @@ export function isFirebaseConnected(): boolean {
 }
 
 /**
+ * Generate a temporary user ID for unauthenticated sessions
+ * Used when Firebase Auth has no signed-in user yet
+ */
+function generateTemporaryUserId(): string {
+  const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID 
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  return `temp-${randomPart}`;
+}
+
+/**
  * Initialize Firebase Authentication
- * Uses Firebase Client SDK onAuthStateChanged and signInAnonymously methods
+ * Uses Firebase Client SDK onAuthStateChanged method
  * 
  * This function:
- * 1. Checks if a user is already authenticated
- * 2. If not, creates an anonymous session for basic app functionality
- * 3. Returns the user ID and online status
+ * 1. Checks if Firebase is configured and available
+ * 2. Checks if a user is already authenticated (GitHub, Email, etc.)
+ * 3. If not authenticated, generates a temporary ID but keeps Firebase ONLINE
+ * 4. Returns the user ID and online status
  * 
- * Note: Anonymous sign-in is a client-safe operation that does not require
- * admin privileges and only creates a session for the current user.
+ * Note: Firebase remains ONLINE even without an authenticated user so that
+ * Firestore features (chat, squad status, etc.) continue to work. Users can
+ * sign in using GitHub OAuth or Email/Password authentication to get a
+ * persistent Firebase Auth user ID.
+ * 
+ * IMPORTANT: signInAnonymously() has been intentionally removed because it
+ * requires explicit enablement in Firebase Console. When disabled, it throws
+ * 'auth/admin-restricted-operation' error which prevents the app from loading.
  */
 export async function initializeFirebaseAuth(): Promise<{ userId: string; isOnline: boolean }> {
   // If Firebase is not configured, generate a local offline user ID
-  if (!auth || !isFirebaseConfigured) {
-    // Use crypto.randomUUID for better uniqueness, fallback to timestamp-based ID
+  if (!auth || !isFirebaseConfigured || !db) {
     const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID 
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
@@ -109,22 +128,28 @@ export async function initializeFirebaseAuth(): Promise<{ userId: string; isOnli
   }
 
   const authInstance = auth;
-  return new Promise((resolve, reject) => {
-    onAuthStateChanged(authInstance, async (user) => {
+  return new Promise((resolve) => {
+    // Listen for auth state changes (user might already be signed in from a previous session)
+    const unsubscribe = onAuthStateChanged(authInstance, async (user) => {
+      // Unsubscribe after first callback to avoid multiple resolves
+      unsubscribe();
+      
       if (user) {
+        // User is signed in (GitHub, Email, or other provider)
         currentUserId = user.uid;
         console.log("Firebase Auth Ready — UID:", currentUserId);
         resolve({ userId: currentUserId, isOnline: true });
       } else {
-        try {
-          const result = await signInAnonymously(authInstance);
-          currentUserId = result.user.uid;
-          console.log("Signed in anonymously — UID:", currentUserId);
-          resolve({ userId: currentUserId, isOnline: true });
-        } catch (error) {
-          console.error("Firebase auth error:", error);
-          reject(error);
-        }
+        // No user is signed in yet, but Firebase is still ONLINE and connected.
+        // Generate a temporary ID for this session. The user can sign in later
+        // using GitHub OAuth or Email/Password to get a persistent user ID.
+        // 
+        // Firebase Firestore features (chat, squad status, etc.) will work
+        // based on the security rules configured in the Firebase Console.
+        currentUserId = generateTemporaryUserId();
+        console.log("Firebase connected (no authenticated user) — Temp ID:", currentUserId);
+        // Return isOnline: true because Firebase IS connected, just no auth user yet
+        resolve({ userId: currentUserId, isOnline: true });
       }
     });
   });
