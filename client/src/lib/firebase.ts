@@ -1,5 +1,15 @@
 import { initializeApp, FirebaseApp } from "firebase/app";
-import { getAuth, signInAnonymously, onAuthStateChanged, User, Auth } from "firebase/auth";
+import { 
+  getAuth, 
+  signInAnonymously, 
+  signInWithPopup, 
+  GithubAuthProvider, 
+  signOut as firebaseSignOut,
+  onAuthStateChanged, 
+  User, 
+  Auth,
+  UserCredential
+} from "firebase/auth";
 import { 
   getFirestore, 
   collection, 
@@ -17,12 +27,12 @@ import {
 
 // Firebase configuration - uses environment variables or falls back to hardcoded values
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB2WA7yotRlqNidwIgJcT19JNrK8ukMgs4",
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads"}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads",
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads"}.firebasestorage.app`,
-  messagingSenderId: "503659624108",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:503659624108:web:6e57fbc6bf36b0d5989109"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDKAUcB3EbLuVU-ksSa14vIR8Ct5zui1gQ",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "phasmophobia-hq.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobia-hq",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "phasmophobia-hq.firebasestorage.app",
+  messagingSenderId: "477100343828",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:477100343828:web:9cc338e6a081bbab631d01"
 };
 
 const isFirebaseConfigured = true;
@@ -81,6 +91,90 @@ export async function initializeFirebaseAuth(): Promise<{ userId: string; isOnli
       }
     });
   });
+}
+
+// GitHub user info interface
+export interface GitHubUserInfo {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+  providerId: string;
+}
+
+// Sign in with GitHub using popup
+export async function signInWithGitHub(): Promise<GitHubUserInfo> {
+  if (!auth) {
+    throw new Error("Firebase is not configured. GitHub sign-in is unavailable.");
+  }
+
+  const provider = new GithubAuthProvider();
+  // Request additional scopes if needed
+  provider.addScope('read:user');
+  provider.addScope('user:email');
+
+  try {
+    const result: UserCredential = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    // Update module-level userId for Firebase operations (sendChatMessage, updateSquadStatus, etc.)
+    currentUserId = user.uid;
+    console.log("Signed in with GitHub — UID:", currentUserId);
+
+    return {
+      uid: user.uid,
+      displayName: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL,
+      providerId: 'github.com'
+    };
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string; message?: string };
+    console.error("GitHub sign-in error:", firebaseError);
+    
+    // Provide user-friendly error messages
+    if (firebaseError.code === 'auth/popup-closed-by-user') {
+      throw new Error("Sign-in was cancelled. Please try again.");
+    } else if (firebaseError.code === 'auth/account-exists-with-different-credential') {
+      throw new Error("An account already exists with the same email. Try signing in with a different method.");
+    } else if (firebaseError.code === 'auth/popup-blocked') {
+      throw new Error("Popup was blocked by browser. Please allow popups for this site.");
+    } else {
+      throw new Error(firebaseError.message || "Failed to sign in with GitHub. Please try again.");
+    }
+  }
+}
+
+// Sign out from Firebase
+export async function signOut(): Promise<void> {
+  if (!auth) {
+    console.warn("Firebase is not configured. Sign out skipped.");
+    return;
+  }
+
+  try {
+    await firebaseSignOut(auth);
+    currentUserId = null;
+    console.log("User signed out successfully");
+  } catch (error) {
+    console.error("Sign out error:", error);
+    throw new Error("Failed to sign out. Please try again.");
+  }
+}
+
+// Get current authenticated user
+export function getCurrentUser(): User | null {
+  if (!auth) {
+    return null;
+  }
+  return auth.currentUser;
+}
+
+// Check if user is authenticated with GitHub
+export function isGitHubAuthenticated(): boolean {
+  const user = getCurrentUser();
+  if (!user) return false;
+  return user.providerData.some(provider => provider.providerId === 'github.com');
 }
 
 export interface FirebaseChatMessage {
