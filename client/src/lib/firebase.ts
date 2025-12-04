@@ -87,14 +87,14 @@ export function isFirebaseConnected(): boolean {
 }
 
 /**
- * Generate a temporary user ID for unauthenticated sessions
- * Used when Firebase Auth has no signed-in user yet
+ * Generate a random user ID with a given prefix
+ * Used when Firebase Auth has no signed-in user yet or when offline
  */
-function generateTemporaryUserId(): string {
+function generateUserId(prefix: string): string {
   const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID 
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-  return `temp-${randomPart}`;
+  return `${prefix}-${randomPart}`;
 }
 
 /**
@@ -119,10 +119,7 @@ function generateTemporaryUserId(): string {
 export async function initializeFirebaseAuth(): Promise<{ userId: string; isOnline: boolean }> {
   // If Firebase is not configured, generate a local offline user ID
   if (!auth || !isFirebaseConfigured || !db) {
-    const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID 
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-    currentUserId = `offline-${randomPart}`;
+    currentUserId = generateUserId('offline');
     console.log("Firebase not configured. Using offline mode — ID:", currentUserId);
     return { userId: currentUserId, isOnline: false };
   }
@@ -146,7 +143,7 @@ export async function initializeFirebaseAuth(): Promise<{ userId: string; isOnli
         // 
         // Firebase Firestore features (chat, squad status, etc.) will work
         // based on the security rules configured in the Firebase Console.
-        currentUserId = generateTemporaryUserId();
+        currentUserId = generateUserId('temp');
         console.log("Firebase connected (no authenticated user) — Temp ID:", currentUserId);
         // Return isOnline: true because Firebase IS connected, just no auth user yet
         resolve({ userId: currentUserId, isOnline: true });
