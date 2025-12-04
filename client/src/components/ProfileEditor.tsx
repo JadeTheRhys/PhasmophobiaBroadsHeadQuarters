@@ -5,10 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { User, Save, Check } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Save, Check, Mail } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 import { useAppStore } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 import { GitHubLogin } from '@/components/GitHubLogin';
+import { EmailPasswordLogin } from '@/components/EmailPasswordLogin';
 
 // Get base URL for assets (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/';
@@ -158,9 +161,30 @@ export function ProfileEditor({ onSave }: ProfileEditorProps) {
 
         <div className="space-y-3">
           <h4 className="text-md font-orbitron text-primary flex items-center gap-2">
-            GitHub Authentication
+            Authentication
           </h4>
-          <GitHubLogin />
+          <p className="text-xs text-muted-foreground font-jetbrains">
+            Sign in to sync your profile and access Firestore data across devices.
+          </p>
+          
+          <Tabs defaultValue="github" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="github" className="font-jetbrains text-xs flex items-center gap-1">
+                <FaGithub className="w-3 h-3" />
+                GitHub
+              </TabsTrigger>
+              <TabsTrigger value="email" className="font-jetbrains text-xs flex items-center gap-1">
+                <Mail className="w-3 h-3" />
+                Email
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="github">
+              <GitHubLogin />
+            </TabsContent>
+            <TabsContent value="email">
+              <EmailPasswordLogin />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
