@@ -48,6 +48,31 @@ export function EmailPasswordLogin() {
   const [emailUser, setEmailUser] = useState<{ uid: string; email: string | null } | null>(null);
   const { toast } = useToast();
 
+  /**
+   * Helper function to update auth state after successful authentication.
+   * Uses the unified auth state (setGitHubAuth) for all providers to simplify
+   * state management and ensure consistent UI behavior.
+   */
+  const updateAuthState = async (uid: string, displayName: string, userEmail: string | null) => {
+    // Update local component state
+    setEmailUser({ uid, email: userEmail });
+    setIsEmailAuthenticated(true);
+    
+    // Update unified auth state (used for both GitHub and Email auth)
+    setGitHubAuth(true, {
+      uid,
+      displayName,
+      email: userEmail,
+      photoURL: DEFAULT_AVATAR_URL
+    });
+
+    // Update user profile
+    setUser(uid, displayName, DEFAULT_AVATAR_URL);
+
+    // Update squad status with new profile
+    await updateSquadStatus(displayName, DEFAULT_AVATAR_URL);
+  };
+
   const handleSignIn = async () => {
     if (!email || !password) {
       toast({
@@ -70,25 +95,12 @@ export function EmailPasswordLogin() {
     setIsLoading(true);
     try {
       const userInfo = await signInWithEmail(email, password);
-      
-      // Update local state
-      setEmailUser({ uid: userInfo.uid, email: userInfo.email });
-      setIsEmailAuthenticated(true);
-      
-      // Also update the GitHub auth state for consistent UI
-      setGitHubAuth(true, {
-        uid: userInfo.uid,
-        displayName: userInfo.displayName || email.split('@')[0],
-        email: userInfo.email,
-        photoURL: DEFAULT_AVATAR_URL
-      });
-
-      // Update user profile
       const displayName = userInfo.displayName || email.split('@')[0] || DEFAULT_DISPLAY_NAME;
-      setUser(userInfo.uid, displayName, DEFAULT_AVATAR_URL);
-
-      // Update squad status
-      await updateSquadStatus(displayName, DEFAULT_AVATAR_URL);
+      
+      // Update auth state (using unified auth state management)
+      // Note: setGitHubAuth is reused here to maintain a single auth state for all providers
+      // This simplifies state management across GitHub and Email authentication
+      await updateAuthState(userInfo.uid, displayName, userInfo.email);
 
       toast({
         title: "Welcome Back, Ghost Hunter!",
@@ -141,25 +153,10 @@ export function EmailPasswordLogin() {
     setIsLoading(true);
     try {
       const userInfo = await signUpWithEmail(email, password);
-      
-      // Update local state
-      setEmailUser({ uid: userInfo.uid, email: userInfo.email });
-      setIsEmailAuthenticated(true);
-      
-      // Also update the GitHub auth state for consistent UI
-      setGitHubAuth(true, {
-        uid: userInfo.uid,
-        displayName: email.split('@')[0],
-        email: userInfo.email,
-        photoURL: DEFAULT_AVATAR_URL
-      });
-
-      // Update user profile
       const displayName = email.split('@')[0] || DEFAULT_DISPLAY_NAME;
-      setUser(userInfo.uid, displayName, DEFAULT_AVATAR_URL);
-
-      // Update squad status
-      await updateSquadStatus(displayName, DEFAULT_AVATAR_URL);
+      
+      // Update auth state (using unified auth state management)
+      await updateAuthState(userInfo.uid, displayName, userInfo.email);
 
       toast({
         title: "Account Created!",

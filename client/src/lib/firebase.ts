@@ -292,19 +292,18 @@ export async function signInWithEmail(email: string, password: string): Promise<
     const firebaseError = error as { code?: string; message?: string };
     console.error("Email sign-in error:", firebaseError);
     
-    // Provide user-friendly error messages for common auth errors
-    if (firebaseError.code === 'auth/user-not-found') {
-      throw new Error("No account found with this email address.");
-    } else if (firebaseError.code === 'auth/wrong-password') {
-      throw new Error("Incorrect password. Please try again.");
+    // Use generic error messages to prevent user enumeration attacks
+    // Do not reveal whether an email exists in the system
+    if (firebaseError.code === 'auth/user-not-found' || 
+        firebaseError.code === 'auth/wrong-password' ||
+        firebaseError.code === 'auth/invalid-credential') {
+      throw new Error("Invalid email or password. Please check your credentials.");
     } else if (firebaseError.code === 'auth/invalid-email') {
       throw new Error("Invalid email address format.");
     } else if (firebaseError.code === 'auth/user-disabled') {
       throw new Error("This account has been disabled.");
     } else if (firebaseError.code === 'auth/too-many-requests') {
       throw new Error("Too many failed attempts. Please try again later.");
-    } else if (firebaseError.code === 'auth/invalid-credential') {
-      throw new Error("Invalid email or password. Please check your credentials.");
     } else {
       throw new Error(firebaseError.message || "Failed to sign in. Please try again.");
     }
