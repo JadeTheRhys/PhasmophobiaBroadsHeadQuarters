@@ -27,12 +27,12 @@ import {
 
 // Firebase configuration - uses environment variables or falls back to hardcoded values
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB2WA7yotRlqNidwIgJcT19JNrK8ukMgs4",
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads"}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads",
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobiabroads"}.firebasestorage.app`,
-  messagingSenderId: "503659624108",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:503659624108:web:6e57fbc6bf36b0d5989109"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDKAUcB3EbLuVU-ksSa14vIR8Ct5zui1gQ",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "phasmophobia-hq.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "phasmophobia-hq",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "phasmophobia-hq.firebasestorage.app",
+  messagingSenderId: "477100343828",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:477100343828:web:9cc338e6a081bbab631d01"
 };
 
 const isFirebaseConfigured = true;
