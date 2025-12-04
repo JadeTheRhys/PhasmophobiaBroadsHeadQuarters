@@ -48,7 +48,7 @@ export function CommandInput({ onSendMessage }: CommandInputProps) {
         </Button>
       </div>
       <p className="text-xs text-muted-foreground font-jetbrains">
-        Commands: !hunt, !flicker, !manifest, !curse, !slam, !evidence:X, !dead:X, !revive:X, !location:X
+        Commands: !hunt, !flicker, !manifest, !curse, !slam, !evidence:X, !dead:X, !revive:X, !location:X | 🔊 !scare, !jumpscare, !whisper, !creak, !haunt
       </p>
     </div>
   );

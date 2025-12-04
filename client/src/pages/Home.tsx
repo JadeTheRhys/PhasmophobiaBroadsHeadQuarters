@@ -25,6 +25,12 @@ import {
   FirebaseGhostEvent,
   FirebaseSquadStatus
 } from '@/lib/firebase';
+import { 
+  scarySoundService, 
+  SCARE_COMMANDS_SET, 
+  getSoundCategoryForCommand,
+  type ScareCommand 
+} from '@/lib/scarySounds';
 
 export default function Home() {
   const { 
@@ -104,6 +110,13 @@ export default function Home() {
       } else if (event.type === 'flicker' || event.type === 'manifest') {
         triggerEffect('flicker');
       }
+      
+      // Play scary sound for scare commands (uses Set for O(1) lookup)
+      if (SCARE_COMMANDS_SET.has(event.type)) {
+        const category = getSoundCategoryForCommand(event.type as ScareCommand);
+        scarySoundService.playRandomSound(event.id, category);
+      }
+      
       setEmfLevel(event.intensity || 3);
       
       setLogs(prev => {
@@ -150,6 +163,22 @@ export default function Home() {
           break;
         case 'curse':
           await triggerGhostEvent('curse', 5);
+          break;
+        // Scare commands - trigger sound effects for all connected users
+        case 'scare':
+          await triggerGhostEvent('scare', 4);
+          break;
+        case 'jumpscare':
+          await triggerGhostEvent('jumpscare', 5);
+          break;
+        case 'whisper':
+          await triggerGhostEvent('whisper', 2);
+          break;
+        case 'creak':
+          await triggerGhostEvent('creak', 3);
+          break;
+        case 'haunt':
+          await triggerGhostEvent('haunt', 3);
           break;
         case 'dead':
           if (value) {

@@ -1,5 +1,6 @@
 import { useAppStore } from '@/lib/store';
 import { Wifi, WifiOff } from 'lucide-react';
+import { AudioToggle } from '@/components/AudioToggle';
 
 export function Header() {
   const { userId, displayName, isFirebaseOnline } = useAppStore();
@@ -31,6 +32,8 @@ export function Header() {
             {userId ? displayName : 'AWAITING AUTHORIZATION...'}
           </span>
         </p>
+        <span className="text-muted-foreground">|</span>
+        <AudioToggle />
       </div>
     </div>
   );
