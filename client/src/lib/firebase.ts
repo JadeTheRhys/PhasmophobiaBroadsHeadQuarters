@@ -467,7 +467,13 @@ export async function triggerGhostEvent(type: string, intensity: number = 3) {
     manifest: "Ghost manifestation in progress...",
     slam: "Door SLAM! Ghost activity confirmed.",
     curse: "Cursed object interaction detected!",
-    event: "Paranormal event registered."
+    event: "Paranormal event registered.",
+    // Scare command messages
+    scare: "👻 A terrifying sound echoes through the building...",
+    jumpscare: "💀 JUMP SCARE! Something horrible appeared!",
+    whisper: "🌫️ Whispers from the beyond... Can you hear them?",
+    creak: "🚪 The floorboards creak with an unseen presence...",
+    haunt: "👁️ The ghost's haunting presence fills the room..."
   };
 
   await addDoc(collection(db, "events"), {
