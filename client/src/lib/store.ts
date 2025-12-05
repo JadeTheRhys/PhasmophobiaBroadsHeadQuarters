@@ -17,7 +17,7 @@ interface AppState {
   isFirebaseOnline: boolean;
   isGitHubAuthenticated: boolean;
   gitHubUser: GitHubUser | null;
-  activeTab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile';
+  activeTab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile' | 'equipment';
   setUser: (userId: string, displayName: string, photoUrl: string) => void;
   setFlickering: (value: boolean) => void;
   setShaking: (value: boolean) => void;
@@ -25,7 +25,7 @@ interface AppState {
   setFirebaseOnline: (value: boolean) => void;
   setGitHubAuth: (isAuthenticated: boolean, user: GitHubUser | null) => void;
   clearGitHubAuth: () => void;
-  setActiveTab: (tab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile') => void;
+  setActiveTab: (tab: 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile' | 'equipment') => void;
   triggerEffect: (type: 'hunt' | 'flicker' | 'slam' | 'manifest') => void;
 }
 

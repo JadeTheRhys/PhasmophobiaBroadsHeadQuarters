@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Fingerprint, BookOpen, FolderOpen, Users, User } from 'lucide-react';
+import { MessageCircle, Fingerprint, BookOpen, FolderOpen, Users, User, Wrench } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
-type TabId = 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile';
+type TabId = 'chat' | 'evidence' | 'ghost' | 'cases' | 'squad' | 'profile' | 'equipment';
 
 interface TabConfig {
   id: TabId;
@@ -17,6 +17,7 @@ const TABS: TabConfig[] = [
   { id: 'cases', label: 'Cases', icon: FolderOpen },
   { id: 'squad', label: 'Squad', icon: Users },
   { id: 'profile', label: 'Profile', icon: User },
+  { id: 'equipment', label: 'Equipment', icon: Wrench },
 ];
 
 export function TabNavigation() {
