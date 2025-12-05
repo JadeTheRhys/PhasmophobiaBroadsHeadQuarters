@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Phone, PhoneCall } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
+import { JitsiTroubleshootingModal } from './JitsiTroubleshootingModal';
 
 interface VideoCallButtonProps {
   roomName?: string;
@@ -9,9 +10,19 @@ interface VideoCallButtonProps {
 
 export function VideoCallButton({ roomName = "PhasmoBroadsHQ" }: VideoCallButtonProps) {
   const [isRinging, setIsRinging] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { displayName } = useAppStore();
 
-  const handleStartCall = () => {
+  const handleButtonClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleProceedToCall = () => {
+    setIsModalOpen(false);
     setIsRinging(true);
     
     // Build the Jitsi URL with display name
@@ -26,8 +37,13 @@ export function VideoCallButton({ roomName = "PhasmoBroadsHQ" }: VideoCallButton
 
   return (
     <>
+      <JitsiTroubleshootingModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onProceed={handleProceedToCall}
+      />
       <Button
-        onClick={handleStartCall}
+        onClick={handleButtonClick}
         disabled={isRinging}
         className={`
           relative overflow-visible
