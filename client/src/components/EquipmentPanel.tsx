@@ -258,12 +258,11 @@ export function EquipmentPanel() {
       
       {/* Description */}
       <p className="text-sm font-jetbrains text-muted-foreground">
-        Essential tools for paranormal investigation. Click on each item to learn more.
+        Essential tools for paranormal investigation. Hover over each item for more details.
       </p>
       
       {/* Equipment Grid - Responsive layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2
-                      scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2">
         {EQUIPMENT_LIST.map((equipment) => (
           <EquipmentCard key={equipment.name} equipment={equipment} />
         ))}
