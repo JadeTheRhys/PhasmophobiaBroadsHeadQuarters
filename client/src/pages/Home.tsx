@@ -11,6 +11,7 @@ import { CaseFilesGallery } from '@/components/CaseFilesGallery';
 import { SquadStatus, SquadMember } from '@/components/SquadStatus';
 import { ProfileEditor } from '@/components/ProfileEditor';
 import { MapDisplay } from '@/components/MapDisplay';
+import { EquipmentPanel } from '@/components/EquipmentPanel';
 import { useAppStore } from '@/lib/store';
 import { 
   initializeFirebaseAuth,
@@ -308,6 +309,8 @@ export default function Home() {
         );
       case 'profile':
         return <ProfileEditor onSave={handleSaveProfile} />;
+      case 'equipment':
+        return <EquipmentPanel />;
       default:
         return <ChatPanel messages={chatMessagesDisplay} />;
     }
