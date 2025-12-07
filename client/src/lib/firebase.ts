@@ -78,6 +78,91 @@ export { db, auth };
 
 let currentUserId: string | null = null;
 
+/**
+ * Enhanced error handler for Firestore permission errors
+ * Provides actionable guidance for common Firebase access issues
+ */
+function handleFirestoreError(error: { code?: string; message?: string }, operation: string): void {
+  console.error(`Error ${operation}:`, error);
+  
+  if (error.code === 'permission-denied') {
+    console.error(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   FIRESTORE PERMISSION DENIED ERROR                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+The app cannot access Firestore because security rules are not properly deployed.
+
+📋 QUICK FIX:
+   1. Open terminal in this project directory
+   2. Run: firebase deploy --only firestore:rules
+   3. Refresh this page
+
+📚 DETAILED TROUBLESHOOTING:
+   See FIRESTORE_TROUBLESHOOTING.md in the project root for comprehensive guide
+
+🔍 COMMON CAUSES:
+   ✗ Firestore rules not deployed to Firebase
+   ✗ Deployed to wrong Firebase project
+   ✗ Using Realtime Database instead of Firestore
+   ✗ Firestore database not created in Firebase Console
+
+🌐 VERIFY IN FIREBASE CONSOLE:
+   1. Go to https://console.firebase.google.com/
+   2. Select project: ${firebaseConfig.projectId}
+   3. Navigate to: Firestore Database > Rules
+   4. Verify rules match firestore.rules file in this repo
+   5. Check "Last published" timestamp
+
+💡 NEED HELP?
+   Check browser console for additional error details
+   See FIRESTORE_TROUBLESHOOTING.md for step-by-step solutions
+    `);
+  } else if (error.code === 'unavailable') {
+    console.error(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   FIRESTORE CONNECTION UNAVAILABLE                         ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+Cannot connect to Firebase servers.
+
+🔍 COMMON CAUSES:
+   ✗ No internet connection
+   ✗ Firewall blocking Firebase
+   ✗ Firebase service outage
+   ✗ Incorrect Firebase project configuration
+
+🔧 TROUBLESHOOTING:
+   1. Check your internet connection
+   2. Verify Firebase project ID in .env: ${firebaseConfig.projectId}
+   3. Check Firebase status: https://status.firebase.google.com/
+   4. Try disabling VPN or proxy
+    `);
+  } else if (error.code === 'failed-precondition') {
+    console.error(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   FIRESTORE DATABASE NOT FOUND                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+The Firestore database may not exist for this project.
+
+🔧 FIX:
+   1. Go to https://console.firebase.google.com/
+   2. Select project: ${firebaseConfig.projectId}
+   3. Click "Firestore Database" in left menu
+   4. Click "Create database" if prompted
+   5. Choose production mode
+   6. Select a location (cannot be changed later)
+   7. Deploy rules: firebase deploy --only firestore:rules
+    `);
+  } else {
+    console.error(`
+Unexpected Firestore error (${error.code}): ${error.message}
+Check FIRESTORE_TROUBLESHOOTING.md for help or contact support.
+    `);
+  }
+}
+
 export function getCurrentUserId(): string | null {
   return currentUserId;
 }
@@ -547,11 +632,7 @@ export function subscribeToChatMessages(
     });
     callback(messages);
   }, (error) => {
-    console.error("Error subscribing to chat messages:", error);
-    if (error.code === 'permission-denied') {
-      console.error("Permission denied. Please check your Firebase Console > Firestore Database > Rules");
-      console.error("Deploy the firestore.rules file included in this repository.");
-    }
+    handleFirestoreError(error, "subscribing to chat messages");
   });
 }
 
@@ -584,10 +665,7 @@ export function subscribeToGhostEvents(
       }
     });
   }, (error) => {
-    console.error("Error subscribing to ghost events:", error);
-    if (error.code === 'permission-denied') {
-      console.error("Permission denied. Please deploy the firestore.rules file.");
-    }
+    handleFirestoreError(error, "subscribing to ghost events");
   });
 }
 
@@ -616,10 +694,7 @@ export function subscribeToSquadStatus(
     });
     callback(statuses);
   }, (error) => {
-    console.error("Error subscribing to squad status:", error);
-    if (error.code === 'permission-denied') {
-      console.error("Permission denied. Please deploy the firestore.rules file.");
-    }
+    handleFirestoreError(error, "subscribing to squad status");
   });
 }
 
@@ -645,9 +720,6 @@ export function subscribeToEvidence(
     });
     callback(evidenceList);
   }, (error) => {
-    console.error("Error subscribing to evidence:", error);
-    if (error.code === 'permission-denied') {
-      console.error("Permission denied. Please deploy the firestore.rules file.");
-    }
+    handleFirestoreError(error, "subscribing to evidence");
   });
 }
