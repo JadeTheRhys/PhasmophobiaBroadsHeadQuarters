@@ -650,27 +650,34 @@ export function subscribeToGhostEvents(
     limit(1)
   );
   
-  // Track if this is the first snapshot (initial load)
-  let isFirstSnapshot = true;
+  // Track subscription time to filter out old events
+  const subscriptionTime = Date.now();
   
   return onSnapshot(q, (snapshot) => {
-    // Skip the first snapshot to avoid replaying old events when users join
-    if (isFirstSnapshot) {
-      isFirstSnapshot = false;
-      return;
-    }
+    // Log snapshot changes for debugging
+    console.log(`[Firebase] Ghost events snapshot: ${snapshot.docChanges().length} change(s)`);
     
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
         const data = change.doc.data();
-        callback({
-          id: change.doc.id,
-          type: data.type,
-          intensity: data.intensity || 3,
-          message: data.message || "",
-          triggeredBy: data.triggeredBy || "",
-          timestamp: data.timestamp?.toDate() || new Date()
-        });
+        const eventTimestamp = data.timestamp?.toDate() || new Date();
+        const eventTime = eventTimestamp.getTime();
+        
+        // Only process events that occurred after subscription (plus 1 second buffer for clock skew)
+        // This prevents replaying old events when users join while allowing new events through
+        if (eventTime > subscriptionTime - 1000) {
+          console.log(`[Firebase] Processing new event: ${data.type} (${Math.round((Date.now() - eventTime) / 1000)}s old)`);
+          callback({
+            id: change.doc.id,
+            type: data.type,
+            intensity: data.intensity || 3,
+            message: data.message || "",
+            triggeredBy: data.triggeredBy || "",
+            timestamp: eventTimestamp
+          });
+        } else {
+          console.log(`[Firebase] Skipping old event: ${data.type} (${Math.round((Date.now() - eventTime) / 1000)}s old)`);
+        }
       }
     });
   }, (error) => {
