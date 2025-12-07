@@ -34,10 +34,13 @@ function loadEnvFile() {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
       
-      const [key, ...valueParts] = trimmed.split('=');
-      const value = valueParts.join('=').trim();
+      const equalsIndex = trimmed.indexOf('=');
+      if (equalsIndex === -1) continue;
       
-      if (key && value && !process.env[key]) {
+      const key = trimmed.substring(0, equalsIndex).trim();
+      const value = trimmed.substring(equalsIndex + 1).trim();
+      
+      if (key && !process.env[key]) {
         process.env[key] = value;
       }
     }
@@ -253,20 +256,40 @@ async function verifyFirestoreWrite(db: any): Promise<void> {
 
 async function verifyProjectId(): Promise<void> {
   const projectId = process.env.VITE_FIREBASE_PROJECT_ID;
-  const expectedProjectId = 'phasmophobia-hq';
   
-  if (projectId === expectedProjectId) {
-    results.push({
-      name: 'Project ID',
-      status: 'PASS',
-      message: `Project ID matches expected value: ${projectId}`
-    });
+  // Try to read expected project ID from .firebaserc
+  let expectedProjectId: string | null = null;
+  try {
+    const firebasercPath = path.join(process.cwd(), '.firebaserc');
+    if (fs.existsSync(firebasercPath)) {
+      const firebasercContent = fs.readFileSync(firebasercPath, 'utf-8');
+      const firebaserc = JSON.parse(firebasercContent);
+      expectedProjectId = firebaserc?.projects?.default;
+    }
+  } catch (error) {
+    // .firebaserc doesn't exist or is invalid, that's OK
+  }
+  
+  if (expectedProjectId) {
+    if (projectId === expectedProjectId) {
+      results.push({
+        name: 'Project ID',
+        status: 'PASS',
+        message: `Project ID matches .firebaserc: ${projectId}`
+      });
+    } else {
+      results.push({
+        name: 'Project ID',
+        status: 'WARN',
+        message: `Project ID is '${projectId}' but .firebaserc expects '${expectedProjectId}'`,
+        details: 'Mismatch between .env and .firebaserc. Update one to match the other.'
+      });
+    }
   } else {
     results.push({
       name: 'Project ID',
-      status: 'WARN',
-      message: `Project ID is '${projectId}' (expected '${expectedProjectId}')`,
-      details: 'Using a different project ID is OK if you have your own Firebase project'
+      status: 'PASS',
+      message: `Using project ID: ${projectId}`
     });
   }
 }

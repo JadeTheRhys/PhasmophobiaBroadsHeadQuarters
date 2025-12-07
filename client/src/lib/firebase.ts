@@ -82,7 +82,7 @@ let currentUserId: string | null = null;
  * Enhanced error handler for Firestore permission errors
  * Provides actionable guidance for common Firebase access issues
  */
-function handleFirestoreError(error: any, operation: string): void {
+function handleFirestoreError(error: { code?: string; message?: string }, operation: string): void {
   console.error(`Error ${operation}:`, error);
   
   if (error.code === 'permission-denied') {
