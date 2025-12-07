@@ -171,20 +171,24 @@ class ScarySoundService {
   playRandomSound(eventId?: string, category: SoundCategory = 'all'): boolean {
     // Prevent duplicate plays for the same event
     if (eventId && eventId === this.lastPlayedEventId) {
+      console.debug('[ScarySounds] Skipping duplicate event:', eventId);
       return false;
     }
     
     // Don't play if muted
     if (this.isMuted) {
+      console.debug('[ScarySounds] Audio is muted, skipping playback');
       return false;
     }
 
     // Don't overlap sounds - wait for current to finish
     if (this.isPlaying && this.audioElement) {
+      console.debug('[ScarySounds] Already playing a sound, skipping');
       return false;
     }
 
     const sound = this.getRandomSound(category);
+    console.log('[ScarySounds] Playing sound:', sound.name, 'Category:', category);
     this.playSound(sound.url);
     
     if (eventId) {

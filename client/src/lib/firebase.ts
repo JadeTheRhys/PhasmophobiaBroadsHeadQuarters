@@ -650,7 +650,16 @@ export function subscribeToGhostEvents(
     limit(1)
   );
   
+  // Track if this is the first snapshot (initial load)
+  let isFirstSnapshot = true;
+  
   return onSnapshot(q, (snapshot) => {
+    // Skip the first snapshot to avoid replaying old events when users join
+    if (isFirstSnapshot) {
+      isFirstSnapshot = false;
+      return;
+    }
+    
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
         const data = change.doc.data();

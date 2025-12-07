@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatTime } from '@/lib/store';
@@ -18,6 +19,15 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ messages }: ChatPanelProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [messages]);
+
   return (
     <div className="space-y-4" data-testid="chat-panel">
       <h3 className="text-lg font-orbitron text-accent text-glow-cyan flex items-center gap-2">
@@ -61,6 +71,8 @@ export function ChatPanel({ messages }: ChatPanelProps) {
               </div>
             ))
           )}
+          {/* Invisible div at the end for auto-scrolling */}
+          <div ref={messagesEndRef} aria-hidden="true" />
         </div>
       </ScrollArea>
     </div>
