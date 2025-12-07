@@ -10,6 +10,9 @@
 // Allowed domain for audio URLs - only Mixkit CDN is trusted
 const ALLOWED_AUDIO_DOMAIN = 'assets.mixkit.co';
 
+// Silent audio data URI for priming audio context (minimal MP3)
+const SILENT_AUDIO_DATA_URI = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1f////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4SqZ0YAAAAAAAD/+xDEAAABaQGQAAAAENoAZAAAAHBxp9GhH1AAAAAAAIAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
 /**
  * Validates that a URL is from a trusted source
  */
@@ -99,12 +102,41 @@ class ScarySoundService {
   private isMuted: boolean = false;
   private isPlaying: boolean = false;
   private lastPlayedEventId: string | null = null;
+  private isAudioContextPrimed: boolean = false;
 
   constructor() {
     // Load mute preference from localStorage
     if (typeof window !== 'undefined') {
       const storedMute = localStorage.getItem(MUTE_STORAGE_KEY);
       this.isMuted = storedMute === 'true';
+    }
+  }
+
+  /**
+   * Prime the audio context by playing a silent sound
+   * This helps overcome browser autoplay restrictions
+   * Should be called on user interaction (e.g., clicking audio toggle)
+   */
+  primeAudioContext(): void {
+    if (this.isAudioContextPrimed) return;
+    
+    try {
+      const silentAudio = new Audio();
+      silentAudio.src = SILENT_AUDIO_DATA_URI;
+      silentAudio.volume = 0.01;
+      const playPromise = silentAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.isAudioContextPrimed = true;
+          console.log('[ScarySounds] Audio context primed successfully');
+          silentAudio.pause();
+        }).catch(() => {
+          // Priming failed, but that's okay
+          console.debug('[ScarySounds] Audio context priming failed (expected on some browsers)');
+        });
+      }
+    } catch (error) {
+      console.debug('[ScarySounds] Could not prime audio context:', error);
     }
   }
 
@@ -119,6 +151,11 @@ class ScarySoundService {
    * Toggle audio mute state
    */
   toggleMute(): boolean {
+    // Prime audio context on first user interaction
+    if (!this.isAudioContextPrimed) {
+      this.primeAudioContext();
+    }
+    
     this.isMuted = !this.isMuted;
     if (typeof window !== 'undefined') {
       localStorage.setItem(MUTE_STORAGE_KEY, String(this.isMuted));
@@ -171,20 +208,24 @@ class ScarySoundService {
   playRandomSound(eventId?: string, category: SoundCategory = 'all'): boolean {
     // Prevent duplicate plays for the same event
     if (eventId && eventId === this.lastPlayedEventId) {
+      console.debug('[ScarySounds] Skipping duplicate event:', eventId);
       return false;
     }
     
     // Don't play if muted
     if (this.isMuted) {
+      console.debug('[ScarySounds] Audio is muted, skipping playback');
       return false;
     }
 
     // Don't overlap sounds - wait for current to finish
     if (this.isPlaying && this.audioElement) {
+      console.debug('[ScarySounds] Already playing a sound, skipping');
       return false;
     }
 
     const sound = this.getRandomSound(category);
+    console.log('[ScarySounds] Playing sound:', sound.name, 'Category:', category);
     this.playSound(sound.url);
     
     if (eventId) {
@@ -236,7 +277,11 @@ class ScarySoundService {
           // Handle different types of playback errors
           if (error.name === 'NotAllowedError') {
             // Auto-play blocked by browser policy - this is expected on first interaction
-            console.warn('[ScarySounds] Playback blocked by browser policy. User interaction required.');
+            console.warn('[ScarySounds] Playback blocked by browser policy. Click the audio toggle button to enable sounds.');
+            // Try to prime the audio context for next time
+            if (!this.isAudioContextPrimed) {
+              console.info('[ScarySounds] Tip: Unmute audio using the audio toggle button to hear sound effects.');
+            }
           } else if (error.name === 'NotSupportedError') {
             console.error('[ScarySounds] Audio format not supported:', url);
           } else if (error.name === 'AbortError') {
