@@ -652,21 +652,20 @@ export function subscribeToGhostEvents(
   
   // Track subscription time to filter out old events
   const subscriptionTime = Date.now();
+  // Buffer to account for clock skew between client and Firestore server
+  const CLOCK_SKEW_BUFFER_MS = 1000;
   
   return onSnapshot(q, (snapshot) => {
-    // Log snapshot changes for debugging
-    console.log(`[Firebase] Ghost events snapshot: ${snapshot.docChanges().length} change(s)`);
-    
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
         const data = change.doc.data();
         const eventTimestamp = data.timestamp?.toDate() || new Date();
         const eventTime = eventTimestamp.getTime();
+        const eventAgeSeconds = Math.round((Date.now() - eventTime) / 1000);
         
-        // Only process events that occurred after subscription (plus 1 second buffer for clock skew)
+        // Only process events that occurred after subscription (with buffer for clock skew)
         // This prevents replaying old events when users join while allowing new events through
-        if (eventTime > subscriptionTime - 1000) {
-          console.log(`[Firebase] Processing new event: ${data.type} (${Math.round((Date.now() - eventTime) / 1000)}s old)`);
+        if (eventTime > subscriptionTime - CLOCK_SKEW_BUFFER_MS) {
           callback({
             id: change.doc.id,
             type: data.type,
@@ -675,9 +674,8 @@ export function subscribeToGhostEvents(
             triggeredBy: data.triggeredBy || "",
             timestamp: eventTimestamp
           });
-        } else {
-          console.log(`[Firebase] Skipping old event: ${data.type} (${Math.round((Date.now() - eventTime) / 1000)}s old)`);
         }
+        // Skipped old events are silently ignored to avoid console noise in production
       }
     });
   }, (error) => {
