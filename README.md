@@ -93,6 +93,7 @@ npm start
 | `npm start` | Run production server |
 | `npm run check` | Run TypeScript type checking |
 | `npm run db:push` | Push database schema (requires DATABASE_URL) |
+| `npm run verify:firebase` | Verify Firebase configuration and connectivity |
 
 ## Project Structure
 
@@ -155,10 +156,12 @@ Type in the chat panel:
 
 **Chat messages not showing / Real-time updates not working**
 - **Most common cause**: Firestore security rules have not been deployed
+- **Quick diagnosis**: Run `npm run verify:firebase` to check your Firebase configuration
 - Check browser console for errors like "Missing or insufficient permissions"
 - Solution: Deploy the Firestore security rules using the Firebase CLI or Firebase Console (see step 4 in Installation)
 - Verify rules are active: Firebase Console > Firestore Database > Rules tab
 - The `firestore.rules` file in this repository contains the correct security rules that allow all users to read/write chat messages
+- **For detailed troubleshooting**: See [FIRESTORE_TROUBLESHOOTING.md](./FIRESTORE_TROUBLESHOOTING.md) for comprehensive step-by-step solutions
 
 **Port already in use**
 ```bash
