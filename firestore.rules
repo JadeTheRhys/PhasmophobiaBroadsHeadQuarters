@@ -1,15 +1,28 @@
 rules_version = '2';
 
 // Firestore Security Rules for Phasmophobia HQ
-// These rules allow all users (authenticated and unauthenticated) to read and write
-// This is appropriate for a collaborative ghost hunting app where all squad members
-// need to see each other's messages, status updates, and evidence logs in real-time
+// 
+// DESIGN DECISION: Permissive rules for collaborative gameplay
+// These rules allow all users (authenticated and unauthenticated) to read and write.
+// This is intentional for a collaborative ghost hunting game where:
+// - All squad members need real-time visibility of each other's messages and status
+// - Users can join games without requiring sign-up friction
+// - The focus is on gameplay experience over strict access control
+//
+// SECURITY CONSIDERATIONS:
+// - For production deployments with many users, consider:
+//   1. Requiring authentication for write operations
+//   2. Implementing rate limiting via Firebase App Check
+//   3. Adding user-based permissions for sensitive operations
+//   4. Monitoring usage and costs in Firebase Console
+// - For small squad-based gameplay (the intended use case), these rules are appropriate
 
 service cloud.firestore {
   match /databases/{database}/documents {
     
     // Chat messages - everyone can read and write
-    // This allows all squad members to see messages regardless of authentication status
+    // Allows all squad members to see messages regardless of authentication status
+    // In production with many users, consider requiring authentication for writes
     match /chat/{messageId} {
       allow read: if true;
       allow create: if true;
@@ -27,11 +40,13 @@ service cloud.firestore {
     }
     
     // Squad status - everyone can read and write
-    // This allows all squad members to see each other's location, alive/dead status, etc.
+    // Allows all squad members to see each other's location, alive/dead status, etc.
+    // NOTE: Currently allows any user to update any status document
+    // For stricter security, add: allow update: if request.auth != null && request.auth.uid == statusId;
     match /status/{statusId} {
       allow read: if true;
       allow create: if true;
-      allow update: if true;  // Users can update their own status
+      allow update: if true;  // Currently allows all users to update any status
       allow delete: if false;  // Status records should not be deleted
     }
     

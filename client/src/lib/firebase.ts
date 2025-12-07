@@ -548,8 +548,10 @@ export function subscribeToChatMessages(
     callback(messages);
   }, (error) => {
     console.error("Error subscribing to chat messages:", error);
-    console.error("This is likely due to Firestore security rules blocking access.");
-    console.error("Please check your Firebase Console > Firestore Database > Rules");
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please check your Firebase Console > Firestore Database > Rules");
+      console.error("Deploy the firestore.rules file included in this repository.");
+    }
   });
 }
 
@@ -583,7 +585,9 @@ export function subscribeToGhostEvents(
     });
   }, (error) => {
     console.error("Error subscribing to ghost events:", error);
-    console.error("This is likely due to Firestore security rules blocking access.");
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please deploy the firestore.rules file.");
+    }
   });
 }
 
@@ -613,7 +617,9 @@ export function subscribeToSquadStatus(
     callback(statuses);
   }, (error) => {
     console.error("Error subscribing to squad status:", error);
-    console.error("This is likely due to Firestore security rules blocking access.");
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please deploy the firestore.rules file.");
+    }
   });
 }
 
@@ -640,6 +646,8 @@ export function subscribeToEvidence(
     callback(evidenceList);
   }, (error) => {
     console.error("Error subscribing to evidence:", error);
-    console.error("This is likely due to Firestore security rules blocking access.");
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please deploy the firestore.rules file.");
+    }
   });
 }
