@@ -40,7 +40,37 @@ A real-time multiplayer ghost hunting command center for Phasmophobia squads. Fe
    - **Firebase credentials are REQUIRED** - get them from [Firebase Console](https://console.firebase.google.com/)
    - `DATABASE_URL` is optional (app uses in-memory storage by default)
 
-4. **Run in development mode**
+4. **Deploy Firestore Security Rules** (REQUIRED for chat and real-time features)
+   
+   The app includes Firestore security rules that allow all users to read and write messages, events, and status updates.
+   
+   **Option A: Deploy via Firebase CLI** (recommended)
+   ```bash
+   # Install Firebase CLI globally
+   npm install -g firebase-tools
+   
+   # Login to Firebase
+   firebase login
+   
+   # Initialize Firebase in your project (if not already done)
+   firebase init firestore
+   # Select your Firebase project
+   # Use existing firestore.rules file when prompted
+   
+   # Deploy the security rules
+   firebase deploy --only firestore:rules
+   ```
+   
+   **Option B: Manual deployment via Firebase Console**
+   1. Go to [Firebase Console](https://console.firebase.google.com/)
+   2. Select your project
+   3. Navigate to Firestore Database > Rules
+   4. Copy the contents of `firestore.rules` and paste it into the editor
+   5. Click "Publish"
+   
+   **Important:** Without proper Firestore security rules, chat messages and real-time updates will not be visible to users.
+
+5. **Run in development mode**
    ```bash
    npm run dev
    ```
@@ -122,6 +152,13 @@ Type in the chat panel:
 **Blank page / Firebase error**
 - Ensure you have set the Firebase environment variables in `.env`
 - Get credentials from [Firebase Console](https://console.firebase.google.com/) > Project Settings > General > Your apps
+
+**Chat messages not showing / Real-time updates not working**
+- **Most common cause**: Firestore security rules have not been deployed
+- Check browser console for errors like "Missing or insufficient permissions"
+- Solution: Deploy the Firestore security rules using the Firebase CLI or Firebase Console (see step 4 in Installation)
+- Verify rules are active: Firebase Console > Firestore Database > Rules tab
+- The `firestore.rules` file in this repository contains the correct security rules that allow all users to read/write chat messages
 
 **Port already in use**
 ```bash

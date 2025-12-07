@@ -546,6 +546,10 @@ export function subscribeToChatMessages(
       });
     });
     callback(messages);
+  }, (error) => {
+    console.error("Error subscribing to chat messages:", error);
+    console.error("This is likely due to Firestore security rules blocking access.");
+    console.error("Please check your Firebase Console > Firestore Database > Rules");
   });
 }
 
@@ -577,6 +581,9 @@ export function subscribeToGhostEvents(
         });
       }
     });
+  }, (error) => {
+    console.error("Error subscribing to ghost events:", error);
+    console.error("This is likely due to Firestore security rules blocking access.");
   });
 }
 
@@ -604,6 +611,9 @@ export function subscribeToSquadStatus(
       });
     });
     callback(statuses);
+  }, (error) => {
+    console.error("Error subscribing to squad status:", error);
+    console.error("This is likely due to Firestore security rules blocking access.");
   });
 }
 
@@ -628,5 +638,8 @@ export function subscribeToEvidence(
       });
     });
     callback(evidenceList);
+  }, (error) => {
+    console.error("Error subscribing to evidence:", error);
+    console.error("This is likely due to Firestore security rules blocking access.");
   });
 }

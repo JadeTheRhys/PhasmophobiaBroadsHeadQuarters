@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Firestore Security Rules for Phasmophobia HQ
+// These rules allow all users (authenticated and unauthenticated) to read and write
+// This is appropriate for a collaborative ghost hunting app where all squad members
+// need to see each other's messages, status updates, and evidence logs in real-time
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Chat messages - everyone can read and write
+    // This allows all squad members to see messages regardless of authentication status
+    match /chat/{messageId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;  // Messages should not be edited after creation
+      allow delete: if false;  // Messages should not be deleted
+    }
+    
+    // Ghost events - everyone can read and write
+    // This allows any squad member to trigger ghost events (hunts, flickers, etc.)
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;  // Events should not be edited
+      allow delete: if false;  // Events should not be deleted
+    }
+    
+    // Squad status - everyone can read and write
+    // This allows all squad members to see each other's location, alive/dead status, etc.
+    match /status/{statusId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;  // Users can update their own status
+      allow delete: if false;  // Status records should not be deleted
+    }
+    
+    // Evidence - everyone can read and write
+    // This allows all squad members to log and view evidence
+    match /evidence/{evidenceId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;  // Evidence should not be edited after logging
+      allow delete: if false;  // Evidence should not be deleted
+    }
+  }
+}
