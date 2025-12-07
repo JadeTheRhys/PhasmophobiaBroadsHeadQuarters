@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// Firestore Security Rules for Phasmophobia HQ
+// 
+// DESIGN DECISION: Permissive rules for collaborative gameplay
+// These rules allow all users (authenticated and unauthenticated) to read and write.
+// This is intentional for a collaborative ghost hunting game where:
+// - All squad members need real-time visibility of each other's messages and status
+// - Users can join games without requiring sign-up friction
+// - The focus is on gameplay experience over strict access control
+//
+// SECURITY CONSIDERATIONS:
+// - For production deployments with many users, consider:
+//   1. Requiring authentication for write operations
+//   2. Implementing rate limiting via Firebase App Check
+//   3. Adding user-based permissions for sensitive operations
+//   4. Monitoring usage and costs in Firebase Console
+// - For small squad-based gameplay (the intended use case), these rules are appropriate
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Chat messages - everyone can read and write
+    // Allows all squad members to see messages regardless of authentication status
+    // In production with many users, consider requiring authentication for writes
+    match /chat/{messageId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;  // Messages should not be edited after creation
+      allow delete: if false;  // Messages should not be deleted
+    }
+    
+    // Ghost events - everyone can read and write
+    // This allows any squad member to trigger ghost events (hunts, flickers, etc.)
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;  // Events should not be edited
+      allow delete: if false;  // Events should not be deleted
+    }
+    
+    // Squad status - everyone can read and write
+    // Allows all squad members to see each other's location, alive/dead status, etc.
+    // NOTE: Currently allows any user to update any status document
+    // For stricter security, add: allow update: if request.auth != null && request.auth.uid == statusId;
+    match /status/{statusId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;  // Currently allows all users to update any status
+      allow delete: if false;  // Status records should not be deleted
+    }
+    
+    // Evidence - everyone can read and write
+    // This allows all squad members to log and view evidence
+    match /evidence/{evidenceId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;  // Evidence should not be edited after logging
+      allow delete: if false;  // Evidence should not be deleted
+    }
+  }
+}

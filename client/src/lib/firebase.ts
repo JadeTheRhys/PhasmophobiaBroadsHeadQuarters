@@ -546,6 +546,12 @@ export function subscribeToChatMessages(
       });
     });
     callback(messages);
+  }, (error) => {
+    console.error("Error subscribing to chat messages:", error);
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please check your Firebase Console > Firestore Database > Rules");
+      console.error("Deploy the firestore.rules file included in this repository.");
+    }
   });
 }
 
@@ -577,6 +583,11 @@ export function subscribeToGhostEvents(
         });
       }
     });
+  }, (error) => {
+    console.error("Error subscribing to ghost events:", error);
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please deploy the firestore.rules file.");
+    }
   });
 }
 
@@ -604,6 +615,11 @@ export function subscribeToSquadStatus(
       });
     });
     callback(statuses);
+  }, (error) => {
+    console.error("Error subscribing to squad status:", error);
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please deploy the firestore.rules file.");
+    }
   });
 }
 
@@ -628,5 +644,10 @@ export function subscribeToEvidence(
       });
     });
     callback(evidenceList);
+  }, (error) => {
+    console.error("Error subscribing to evidence:", error);
+    if (error.code === 'permission-denied') {
+      console.error("Permission denied. Please deploy the firestore.rules file.");
+    }
   });
 }
