@@ -1,7 +1,8 @@
-import { useState, KeyboardEvent } from 'react';
+import { useState, KeyboardEvent, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { scarySoundService } from '@/lib/scarySounds';
 
 interface CommandInputProps {
   onSendMessage: (text: string, isCommand: boolean) => void;
@@ -9,6 +10,25 @@ interface CommandInputProps {
 
 export function CommandInput({ onSendMessage }: CommandInputProps) {
   const [inputValue, setInputValue] = useState('');
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  // Prime audio context on first user interaction
+  useEffect(() => {
+    if (!hasInteracted) {
+      const primeAudio = () => {
+        scarySoundService.primeAudioContext();
+        setHasInteracted(true);
+      };
+      // Prime on any click or keypress in the document
+      document.addEventListener('click', primeAudio, { once: true });
+      document.addEventListener('keypress', primeAudio, { once: true });
+      
+      return () => {
+        document.removeEventListener('click', primeAudio);
+        document.removeEventListener('keypress', primeAudio);
+      };
+    }
+  }, [hasInteracted]);
 
   const handleSubmit = () => {
     const trimmed = inputValue.trim();
