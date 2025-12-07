@@ -12,13 +12,42 @@
  *   npx tsx script/verify-firebase.ts
  */
 
-import { config } from 'dotenv';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Simple .env file parser (avoids adding dotenv dependency)
+function loadEnvFile() {
+  try {
+    const envPath = path.join(process.cwd(), '.env');
+    if (!fs.existsSync(envPath)) {
+      console.log('⚠️  No .env file found. Using environment variables if available.\n');
+      return;
+    }
+    
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    const lines = envContent.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      
+      const [key, ...valueParts] = trimmed.split('=');
+      const value = valueParts.join('=').trim();
+      
+      if (key && value && !process.env[key]) {
+        process.env[key] = value;
+      }
+    }
+  } catch (error) {
+    console.log('⚠️  Could not read .env file. Using environment variables if available.\n');
+  }
+}
 
 // Load environment variables
-config();
+loadEnvFile();
 
 interface TestResult {
   name: string;
