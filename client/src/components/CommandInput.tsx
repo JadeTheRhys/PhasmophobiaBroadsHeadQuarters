@@ -20,12 +20,16 @@ export function CommandInput({ onSendMessage }: CommandInputProps) {
         setHasInteracted(true);
       };
       // Prime on any click or keypress in the document
+      // Using { once: true } so listeners auto-remove after first trigger
       document.addEventListener('click', primeAudio, { once: true });
       document.addEventListener('keypress', primeAudio, { once: true });
       
+      // Cleanup: only needed if component unmounts before interaction
       return () => {
-        document.removeEventListener('click', primeAudio);
-        document.removeEventListener('keypress', primeAudio);
+        if (!hasInteracted) {
+          document.removeEventListener('click', primeAudio);
+          document.removeEventListener('keypress', primeAudio);
+        }
       };
     }
   }, [hasInteracted]);
