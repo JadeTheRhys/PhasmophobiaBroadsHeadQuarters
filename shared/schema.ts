@@ -180,6 +180,21 @@ export const GHOST_DATA: Record<string, { evidence: string[]; strength: string; 
     evidence: ["Orb", "Writing", "DOTS"],
     strength: "Very active early in investigation.",
     weakness: "Weakens drastically over time."
+  },
+  Obambo: {
+    evidence: ["Writing", "Fingerprints", "DOTS"],
+    strength: "Hunts rapidly with high sanity threshold (65%) when aggressive.",
+    weakness: "Hunts only below 10% sanity when calm."
+  },
+  Gallu: {
+    evidence: ["EMF 5", "Fingerprints", "Spirit Box"],
+    strength: "Protective equipment can enrage it, making it faster.",
+    weakness: "Eventually tires and slows down after enraging."
+  },
+  Dayan: {
+    evidence: ["EMF 5", "Orb", "Spirit Box"],
+    strength: "Speeds up when players move nearby.",
+    weakness: "Slows down when players stand still."
   }
 };
 
